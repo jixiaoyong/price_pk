@@ -10,7 +10,8 @@ class GoodsCard extends StatelessWidget {
       required this.onChange,
       required this.onDelete,
       required this.defaultUnitString,
-      required this.unitList});
+      required this.unitList,
+      required this.fromString});
 
   final InputBoxState data;
   final Function(InputBoxState state) onChange;
@@ -18,9 +19,11 @@ class GoodsCard extends StatelessWidget {
   final String defaultUnitString;
   final List<String> unitList;
 
+  final UnitClass Function(String unitName, double value) fromString;
+
   @override
   Widget build(BuildContext context) {
-    var firstPrePrice = data.prePrice;
+    var prePrice = data.prePrice;
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 15.0),
@@ -40,17 +43,17 @@ class GoodsCard extends StatelessWidget {
                     style: TextStyle(color: Colors.green),
                   ),
                   TextSpan(
-                    text:
-                        "${firstPrePrice?.value.toCurrencyString() ?? "0.00"}",
+                    text: prePrice.value.toCurrencyString(),
                     style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                         fontWeight: FontWeight.w900, color: Colors.green),
                   ),
-                  TextSpan(text: "（元/${firstPrePrice?.unit}）")
+                  TextSpan(text: "（元/${prePrice.unit}）")
                 ])),
                 Row(
                   children: [
                     Expanded(
-                      child: TextField(
+                      child: TextFormField(
+                        initialValue: "${data.price}",
                         keyboardType: const TextInputType.numberWithOptions(
                             decimal: true),
                         decoration: const InputDecoration(label: Text("商品总价")),
@@ -66,41 +69,34 @@ class GoodsCard extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: TextField(
+                      child: TextFormField(
+                        initialValue: "${data.unit.value}",
                         keyboardType: const TextInputType.numberWithOptions(
                             decimal: true),
                         decoration: const InputDecoration(label: Text("商品总量")),
                         onChanged: (value) {
                           onChange(data.copyWith(
-                              unit: WeightUnit.fromString(
-                                  data.unit?.unit ?? defaultUnitString,
+                              unit: fromString(
+                                  data.unit.unit ?? defaultUnitString,
                                   double.tryParse(value) ?? 0.0)));
                         },
                       ),
                     ),
                     DropdownButton(
-                      value: data.unit?.unit ?? defaultUnitString,
+                      value: data.unit.unit,
                       items: unitList
                           .map((e) => DropdownMenuItem(
                                 value: e,
                                 child: Text(e),
                               ))
                           .toList(growable: false),
-                      onChanged: (unit) {
+                      onChanged: (unitName) {
                         onChange(data.copyWith(
-                            unit: WeightUnit.fromString(
-                                unit ?? "g", data.unit?.value ?? 0.0)));
+                            unit: fromString(unitName ?? defaultUnitString,
+                                data.unit.value)));
                       },
                     ),
                   ],
-                ),
-                TextField(
-                  decoration: const InputDecoration(label: Text("商品名称")),
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  onChanged: (value) {
-                    onChange(data.copyWith(name: value));
-                  },
                 ),
               ],
             ),

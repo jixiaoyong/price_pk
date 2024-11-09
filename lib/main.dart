@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: 'Flutter Demo',
+      title: '性价比大PK',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
@@ -70,29 +70,41 @@ class _MyHomePageState extends State<MyHomePage>
       ),
       body: Obx(
         () {
-          var firstValue = logic.first;
           return TabBarView(
               controller: _tabController,
-              children: logic.tabs.map((e) {
-                var goodsList = e.goods;
+              children: logic.tabs.map((tabValue) {
+                var goodsList = tabValue.goods;
+                final units = tabValue.units;
                 return ListView.builder(
                   itemBuilder: (context, index) {
                     if (index >= goodsList.length) {
-                      return TextButton(
-                          onPressed: () {}, child: const Text("添加商品"));
+                      return Column(
+                        children: [
+                          TextButton(
+                              onPressed: () {
+                                goodsList.add(InputBoxState(
+                                    unit: tabValue.defaultUnit,
+                                    name: "商品${goodsList.length + 1}"));
+                                tabValue.goods = goodsList;
+                              },
+                              child: const Text("添加商品")),
+                        ],
+                      );
                     }
                     var goods = goodsList[index];
                     return GoodsCard(
                       data: goods,
-                      unitList: const ["mg", "g", "kg", "t"],
+                      unitList: units,
                       defaultUnitString: "g",
                       onChange: (InputBoxState state) {
-                        // logic.first.value = state;
                         goodsList[index] = state;
+                        tabValue.goods = goodsList;
                       },
                       onDelete: () {
                         goodsList.removeAt(index);
+                        tabValue.goods = goodsList;
                       },
+                      fromString: tabValue.fromString,
                     );
                   },
                   itemCount: goodsList.length + 1,

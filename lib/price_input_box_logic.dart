@@ -5,15 +5,16 @@ class PriceInputBoxLogic extends GetxController {
   late List<PKClassify> tabs = [
     PKClassify(
         name: "重量",
-        units: {Milligram(0.0), Gram(0.0), Kilogram(0.0), Ton(0.0)},
-        goods: weightGoods),
+        units: ["mg", "g", "kg", "t"],
+        goods: weightGoods,
+        defaultUnit: Milligram(0.0),
+        fromString: WeightUnit.fromString),
     PKClassify(
         name: "体积",
-        units: {
-          Milliliter(0.0),
-          Liter(0.0),
-        },
-        goods: volumeGoods),
+        units: ["ml", "l"],
+        goods: volumeGoods,
+        defaultUnit: Milliliter(0.0),
+        fromString: VolumeUnit.fromString),
   ];
 
   RxList<InputBoxState> weightGoods = List<InputBoxState>.generate(
@@ -23,19 +24,16 @@ class PriceInputBoxLogic extends GetxController {
       2,
       (index) =>
           InputBoxState(name: "商品${index + 1}", unit: Milliliter(0.0))).obs;
-
-  var first = InputBoxState().obs;
-  var second = InputBoxState().obs;
 }
 
 class InputBoxState {
   String name;
   double price;
-  UnitClass? unit;
+  UnitClass unit;
 
-  UnitClass? get prePrice => unit?.prePrice(price);
+  UnitClass get prePrice => unit.prePrice(price);
 
-  InputBoxState({this.price = 0.0, this.unit, this.name = ""});
+  InputBoxState({this.price = 0.0, required this.unit, this.name = ""});
 
   InputBoxState copyWith({double? price, UnitClass? unit, String? name}) {
     return InputBoxState(

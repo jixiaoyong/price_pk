@@ -9,10 +9,18 @@ import 'price_input_box_logic.dart';
 /// @date : 8/11/2024
 class PKClassify {
   String name;
-  Set<UnitClass> units;
+  List<String> units;
   RxList<InputBoxState> goods;
+  UnitClass defaultUnit;
 
-  PKClassify({required this.name, required this.units, required this.goods});
+  UnitClass Function(String unitName, double value) fromString;
+
+  PKClassify(
+      {required this.name,
+      required this.units,
+      required this.goods,
+      required this.defaultUnit,
+      required this.fromString});
 }
 
 abstract class UnitClass {
@@ -117,9 +125,9 @@ abstract class VolumeUnit extends UnitClass {
 
   @override
   factory VolumeUnit.fromString(String unitName, double value) {
-    if ("L" == unitName) {
+    if ("l" == unitName) {
       return VolumeUnit.fromLiters(value);
-    } else if ("mL" == unitName) {
+    } else if ("ml" == unitName) {
       return VolumeUnit.fromMilliliters(value);
     } else {
       throw UnsupportedError("$unitName 不支持");
@@ -128,14 +136,14 @@ abstract class VolumeUnit extends UnitClass {
 }
 
 class Liter extends VolumeUnit {
-  Liter(double value) : super(value: value, unit: 'L');
+  Liter(double value) : super(value: value, unit: 'l');
 
   @override
   double toMilliliters() => value * 1000;
 }
 
 class Milliliter extends VolumeUnit {
-  Milliliter(double value) : super(value: value, unit: 'mL');
+  Milliliter(double value) : super(value: value, unit: 'ml');
 
   @override
   double toMilliliters() => value;
