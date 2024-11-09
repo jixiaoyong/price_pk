@@ -24,6 +24,11 @@ class PriceInputBoxLogic extends GetxController {
       2,
       (index) =>
           InputBoxState(name: "商品${index + 1}", unit: Milliliter(0.0))).obs;
+
+  void sort() {
+    weightGoods.sort((a, b) => a.prePrice.value.compareTo(b.prePrice.value));
+    volumeGoods.sort((a, b) => a.prePrice.value.compareTo(b.prePrice.value));
+  }
 }
 
 class InputBoxState {

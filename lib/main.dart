@@ -53,7 +53,9 @@ class _MyHomePageState extends State<MyHomePage>
         title: Text(widget.title),
         actions: [
           TextButton(
-              onPressed: () {},
+              onPressed: () {
+                logic.sort();
+              },
               child: Column(
                 children: [
                   const Icon(Icons.sort),
