@@ -33,7 +33,7 @@ class PriceInputBoxLogic extends GetxController {
 
 class InputBoxState {
   String name;
-  double price;
+  double? price;
   UnitClass unit;
 
   UnitClass get prePrice => unit.prePrice(price);

@@ -31,7 +31,7 @@ abstract class UnitClass {
 
   /// 均价，返回该单位的均价，一般为该定量单位的最基础的单位
   /// 计算方式为 总价元/单位
-  UnitClass prePrice(double priceYuan);
+  UnitClass prePrice(double? priceYuan);
 
   factory UnitClass.fromString(String unitName, double value) {
     throw UnsupportedError("$unitName 不支持");
@@ -56,8 +56,8 @@ abstract class WeightUnit extends UnitClass {
   double toGrams(); // 所有子类都必须实现的抽象方法，将当前单位转换为克
 
   @override
-  UnitClass prePrice(double priceYuan) {
-    return Gram(priceYuan / toGrams());
+  UnitClass prePrice(double? priceYuan) {
+    return Gram((priceYuan ?? 0) / toGrams());
   }
 
   @override
@@ -119,8 +119,8 @@ abstract class VolumeUnit extends UnitClass {
   double toMilliliters(); // 抽象方法：将当前单位转换为毫升
 
   @override
-  UnitClass prePrice(double priceYuan) {
-    return Milliliter(priceYuan / toMilliliters());
+  UnitClass prePrice(double? priceYuan) {
+    return Milliliter((priceYuan ?? 0) / toMilliliters());
   }
 
   @override
