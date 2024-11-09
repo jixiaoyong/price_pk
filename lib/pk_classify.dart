@@ -120,7 +120,7 @@ abstract class VolumeUnit extends UnitClass {
 
   @override
   UnitClass prePrice(double priceYuan) {
-    return Liter(priceYuan / toMilliliters());
+    return Milliliter(priceYuan / toMilliliters());
   }
 
   @override
