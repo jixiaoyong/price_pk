@@ -65,18 +65,24 @@ class InputBoxState {
   String name;
   double? price;
   UnitClass unit;
+  late int id;
 
-  late int id = DateTime.now().millisecondsSinceEpoch;
+  static int _id = 0;
 
   UnitClass get prePrice => unit.prePrice(price);
 
-  InputBoxState({this.price = 0.0, required this.unit, this.name = ""});
+  InputBoxState(
+      {this.price = 0.0, required this.unit, this.name = "", int? id}) {
+    this.id = id ?? ++_id;
+  }
 
-  InputBoxState copyWith({double? price, UnitClass? unit, String? name}) {
+  InputBoxState copyWith(
+      {double? price, UnitClass? unit, String? name, int? id}) {
     return InputBoxState(
       price: price ?? this.price,
       unit: unit ?? this.unit,
       name: name ?? this.name,
+      id: id ?? this.id,
     );
   }
 }
