@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:price_pk/price_input_box_logic.dart';
 
-import 'goods_card.dart';
+import 'widgets/goods_card.dart';
 
 void main() {
   runApp(const MyApp());
