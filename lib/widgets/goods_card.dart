@@ -55,7 +55,7 @@ class GoodsCard extends StatelessWidget {
                     onChange(data.copyWith(name: value));
                   },
                 ),
-                Text.rich(TextSpan(text: "商品均价${key} ", children: [
+                Text.rich(TextSpan(text: "商品均价 ", children: [
                   const TextSpan(
                     text: "¥",
                     style: TextStyle(color: Colors.green),

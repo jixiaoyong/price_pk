@@ -95,9 +95,10 @@ class _MyHomePageState extends State<MyHomePage>
                     }
                     var goods = goodsList[index];
                     var isHighlight =
-                        goods.prePrice.value == tabValue.minPrePrice.value;
+                        goods.prePrice.value == tabValue.minPrePrice.value &&
+                            0 != goods.prePrice.value;
                     return GoodsCard(
-                      key: ValueKey(goodsList[index].id),
+                      key: ValueKey(goods.id),
                       data: goods,
                       unitList: units,
                       isHighlight: isHighlight,
