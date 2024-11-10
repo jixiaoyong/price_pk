@@ -11,6 +11,7 @@ class PKClassify {
   String name;
   List<String> units;
   RxList<InputBoxState> goods;
+  RxDouble minPrePrice;
   UnitClass defaultUnit;
 
   UnitClass Function(String unitName, double value) fromString;
@@ -19,6 +20,7 @@ class PKClassify {
       {required this.name,
       required this.units,
       required this.goods,
+      required this.minPrePrice,
       required this.defaultUnit,
       required this.fromString});
 }
@@ -57,7 +59,14 @@ abstract class WeightUnit extends UnitClass {
 
   @override
   UnitClass prePrice(double? priceYuan) {
-    return Gram((priceYuan ?? 0) / toGrams());
+    var grams = toGrams();
+    var price = priceYuan ?? 0;
+
+    var prePrice = price / grams;
+    if (0 == grams) {
+      prePrice = price * double.maxFinite;
+    }
+    return Gram(prePrice);
   }
 
   @override
@@ -120,7 +129,14 @@ abstract class VolumeUnit extends UnitClass {
 
   @override
   UnitClass prePrice(double? priceYuan) {
-    return Milliliter((priceYuan ?? 0) / toMilliliters());
+    var mls = toMilliliters();
+    var price = priceYuan ?? 0;
+
+    var prePrice = price / mls;
+    if (0.0 == mls) {
+      prePrice = price * double.maxFinite;
+    }
+    return Milliliter(prePrice);
   }
 
   @override

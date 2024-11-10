@@ -9,16 +9,17 @@ class GoodsCard extends StatelessWidget {
   const GoodsCard(
       {super.key,
       required this.data,
+      this.isHighlight = false,
       required this.onChange,
       required this.onDelete,
-      required this.defaultUnitString,
       required this.unitList,
       required this.fromString});
+
+  final bool isHighlight;
 
   final InputBoxState data;
   final Function(InputBoxState state) onChange;
   final Function onDelete;
-  final String defaultUnitString;
   final List<String> unitList;
 
   final UnitClass Function(String unitName, double value) fromString;
@@ -29,6 +30,12 @@ class GoodsCard extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 15.0),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+          side: BorderSide(
+              color: isHighlight
+                  ? Theme.of(context).primaryColor
+                  : Colors.transparent)),
       child: Stack(
         children: [
           Padding(
@@ -36,6 +43,7 @@ class GoodsCard extends StatelessWidget {
             child: Column(
               children: [
                 TextFormField(
+                  key: key,
                   initialValue: data.name,
                   textAlign: TextAlign.center,
                   keyboardType: TextInputType.name,
@@ -70,7 +78,8 @@ class GoodsCard extends StatelessWidget {
                         ],
                         keyboardType: const TextInputType.numberWithOptions(
                             decimal: true),
-                        decoration: const InputDecoration(label: Text("商品总价")),
+                        decoration: const InputDecoration(
+                            label: Text("商品总价"), border: OutlineInputBorder()),
                         onChanged: (value) {
                           onChange(data.copyWith(
                               price: double.tryParse(value) ?? 0.0));
@@ -79,9 +88,12 @@ class GoodsCard extends StatelessWidget {
                     ),
                     const Expanded(
                       flex: 1,
-                      child: Text("元"),
+                      child: Center(child: Text("元")),
                     )
                   ],
+                ),
+                const Padding(
+                  padding: EdgeInsets.only(top: 20),
                 ),
                 Row(
                   children: [
@@ -92,11 +104,11 @@ class GoodsCard extends StatelessWidget {
                         inputFormatters: [RemoveLeadingZerosFormatter()],
                         keyboardType: const TextInputType.numberWithOptions(
                             decimal: true),
-                        decoration: const InputDecoration(label: Text("商品总量")),
+                        decoration: const InputDecoration(
+                            label: Text("商品总量"), border: OutlineInputBorder()),
                         onChanged: (value) {
                           onChange(data.copyWith(
-                              unit: fromString(
-                                  data.unit.unit ?? defaultUnitString,
+                              unit: fromString(data.unit.unit,
                                   double.tryParse(value) ?? 0.0)));
                         },
                       ),
@@ -116,8 +128,7 @@ class GoodsCard extends StatelessWidget {
                             .toList(growable: false),
                         onChanged: (unitName) {
                           onChange(data.copyWith(
-                              unit: fromString(unitName ?? defaultUnitString,
-                                  data.unit.value)));
+                              unit: fromString(unitName!, data.unit.value)));
                         },
                       ),
                     )

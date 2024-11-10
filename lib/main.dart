@@ -94,10 +94,13 @@ class _MyHomePageState extends State<MyHomePage>
                       );
                     }
                     var goods = goodsList[index];
+                    var isHighlight =
+                        goods.prePrice.value == tabValue.minPrePrice.value;
                     return GoodsCard(
+                      key: ValueKey(goodsList[index].id),
                       data: goods,
                       unitList: units,
-                      defaultUnitString: "g",
+                      isHighlight: isHighlight,
                       onChange: (InputBoxState state) {
                         goodsList[index] = state;
                         tabValue.goods = goodsList;
