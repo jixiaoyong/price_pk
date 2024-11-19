@@ -80,6 +80,10 @@ class GoodsCard extends StatelessWidget {
                             decimal: true),
                         decoration: const InputDecoration(
                             label: Text("商品总价"), border: OutlineInputBorder()),
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                        ),
                         onChanged: (value) {
                           onChange(data.copyWith(
                               price: double.tryParse(value) ?? 0.0));
@@ -104,6 +108,10 @@ class GoodsCard extends StatelessWidget {
                         inputFormatters: [RemoveLeadingZerosFormatter()],
                         keyboardType: const TextInputType.numberWithOptions(
                             decimal: true),
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                        ),
                         decoration: const InputDecoration(
                             label: Text("商品总量"), border: OutlineInputBorder()),
                         onChanged: (value) {
