@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:price_pk/price_input_box_logic.dart';
@@ -17,7 +18,9 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: '性价比大PK',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: CupertinoColors.activeBlue,
+        ),
         useMaterial3: true,
       ),
       home: const MyHomePage(title: '性价比大PK'),
@@ -50,7 +53,11 @@ class _MyHomePageState extends State<MyHomePage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text(widget.title,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: CupertinoColors.activeBlue,
+                )),
         actions: [
           TextButton(
               onPressed: () {

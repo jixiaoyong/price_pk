@@ -5,7 +5,7 @@ import 'package:price_pk/pk_classify.dart';
 import 'package:price_pk/price_input_box_logic.dart';
 import 'package:price_pk/widgets/price_input_formatter.dart';
 
-class GoodsCard extends StatelessWidget {
+class GoodsCard extends StatefulWidget {
   const GoodsCard(
       {super.key,
       required this.data,
@@ -25,17 +25,70 @@ class GoodsCard extends StatelessWidget {
   final UnitClass Function(String unitName, double value) fromString;
 
   @override
-  Widget build(BuildContext context) {
-    var prePrice = data.prePrice;
+  State<GoodsCard> createState() => _GoodsCardState();
+}
 
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 15.0),
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-          side: BorderSide(
-              color: isHighlight
-                  ? Theme.of(context).primaryColor
-                  : Colors.transparent)),
+class _GoodsCardState extends State<GoodsCard> {
+  late final TextEditingController unitController;
+  late final FocusNode unitFocusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    unitController = TextEditingController(
+      text:
+          widget.data.unit.value == 0 ? '0' : widget.data.unit.value.toString(),
+    );
+    unitFocusNode = FocusNode();
+    unitFocusNode.addListener(() {
+      if (unitFocusNode.hasFocus && unitController.text == '0') {
+        unitController.selection = TextSelection(
+            baseOffset: 0, extentOffset: unitController.text.length);
+      }
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant GoodsCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // 外部数据变化时同步内容
+    final newText =
+        widget.data.unit.value == 0 ? '0' : widget.data.unit.value.toString();
+    if (unitController.text != newText) {
+      unitController.text = newText;
+    }
+  }
+
+  @override
+  void dispose() {
+    unitController.dispose();
+    unitFocusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var prePrice = widget.data.prePrice;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+      decoration: BoxDecoration(
+        color: CupertinoColors.systemBackground.resolveFrom(context),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: CupertinoColors.systemGrey.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: Border.all(
+          color: widget.isHighlight
+              ? CupertinoColors.activeBlue
+              : CupertinoColors.systemGrey4,
+          width: 1,
+        ),
+      ),
       child: Stack(
         children: [
           Padding(
@@ -43,36 +96,71 @@ class GoodsCard extends StatelessWidget {
             child: Column(
               children: [
                 TextFormField(
-                  key: key,
-                  initialValue: data.name,
+                  initialValue: widget.data.name,
                   textAlign: TextAlign.center,
                   keyboardType: TextInputType.name,
                   decoration: const InputDecoration(
                     border: InputBorder.none,
                   ),
-                  style: Theme.of(context).textTheme.headlineSmall,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: CupertinoColors.activeBlue,
+                      ),
                   onChanged: (value) {
-                    onChange(data.copyWith(name: value));
+                    widget.onChange(widget.data.copyWith(name: value));
                   },
                 ),
-                Text.rich(TextSpan(text: "商品均价 ", children: [
-                  const TextSpan(
-                    text: "¥",
-                    style: TextStyle(color: Colors.green),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 18),
+                  child: RichText(
+                    textAlign: TextAlign.center,
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: '均价 ',
+                          style: TextStyle(
+                            color: CupertinoColors.secondaryLabel
+                                .resolveFrom(context),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        TextSpan(
+                          text: '¥',
+                          style: TextStyle(
+                            color: CupertinoColors.label.resolveFrom(context),
+                            fontSize: 22,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        TextSpan(
+                          text: prePrice.value.toCurrencyString(),
+                          style: TextStyle(
+                            color: CupertinoColors.label.resolveFrom(context),
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        TextSpan(
+                          text: ' 元/${prePrice.unit}',
+                          style: TextStyle(
+                            color: CupertinoColors.tertiaryLabel
+                                .resolveFrom(context),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  TextSpan(
-                    text: prePrice.value.toCurrencyString(),
-                    style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                        fontWeight: FontWeight.w900, color: Colors.green),
-                  ),
-                  TextSpan(text: "（元/${prePrice.unit}）")
-                ])),
+                ),
                 Row(
                   children: [
                     Expanded(
                       flex: 5,
                       child: TextFormField(
-                        initialValue: "${data.price == 0 ? '' : data.price}",
+                        initialValue:
+                            "${widget.data.price == 0 ? '' : widget.data.price}",
                         inputFormatters: [PriceInputFormatter(decimalRange: 2)],
                         keyboardType: const TextInputType.numberWithOptions(
                             decimal: true),
@@ -83,8 +171,8 @@ class GoodsCard extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                         onChanged: (value) {
-                          onChange(data.copyWith(
-                              price: double.tryParse(value) ?? 0.0));
+                          widget.onChange(widget.data
+                              .copyWith(price: double.tryParse(value) ?? 0.0));
                         },
                       ),
                     ),
@@ -102,7 +190,8 @@ class GoodsCard extends StatelessWidget {
                     Expanded(
                       flex: 5,
                       child: TextFormField(
-                        initialValue: "${data.unit.value}",
+                        controller: unitController,
+                        focusNode: unitFocusNode,
                         inputFormatters: [PriceInputFormatter(decimalRange: 3)],
                         keyboardType: const TextInputType.numberWithOptions(
                             decimal: true),
@@ -113,29 +202,65 @@ class GoodsCard extends StatelessWidget {
                         decoration: const InputDecoration(
                             label: Text("商品总量"), border: OutlineInputBorder()),
                         onChanged: (value) {
-                          onChange(data.copyWith(
-                              unit: fromString(data.unit.unit,
+                          widget.onChange(widget.data.copyWith(
+                              unit: widget.fromString(widget.data.unit.unit,
                                   double.tryParse(value) ?? 0.0)));
                         },
                       ),
                     ),
                     Expanded(
                       flex: 1,
-                      child: DropdownButton(
-                        value: data.unit.unit,
-                        isExpanded: true,
-                        underline: Container(),
-                        items: unitList
-                            .map((e) => DropdownMenuItem(
-                                  value: e,
-                                  alignment: Alignment.center,
-                                  child: Text(e),
-                                ))
-                            .toList(growable: false),
-                        onChanged: (unitName) {
-                          onChange(data.copyWith(
-                              unit: fromString(unitName!, data.unit.value)));
-                        },
+                      child: Container(
+                        height: 48,
+                        margin: const EdgeInsets.only(left: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 5),
+                        decoration: BoxDecoration(
+                          color:
+                              CupertinoColors.systemGrey6.resolveFrom(context),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: CupertinoColors.systemGrey4,
+                            width: 1,
+                          ),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: widget.data.unit.unit,
+                            isExpanded: true,
+                            icon: const Icon(CupertinoIcons.chevron_down,
+                                size: 20, color: CupertinoColors.systemGrey),
+                            dropdownColor: CupertinoColors.systemGrey6
+                                .resolveFrom(context),
+                            borderRadius: BorderRadius.circular(12),
+                            style: TextStyle(
+                              color: CupertinoColors.label.resolveFrom(context),
+                              fontSize: 18,
+                            ),
+                            items: widget.unitList
+                                .map((e) => DropdownMenuItem(
+                                      value: e,
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        e,
+                                        style: TextStyle(
+                                          color: e == widget.data.unit.unit
+                                              ? CupertinoColors.activeBlue
+                                              : CupertinoColors.label
+                                                  .resolveFrom(context),
+                                          fontWeight: e == widget.data.unit.unit
+                                              ? FontWeight.bold
+                                              : FontWeight.normal,
+                                        ),
+                                      ),
+                                    ))
+                                .toList(growable: false),
+                            onChanged: (unitName) {
+                              widget.onChange(widget.data.copyWith(
+                                  unit: widget.fromString(
+                                      unitName!, widget.data.unit.value)));
+                            },
+                          ),
+                        ),
                       ),
                     )
                   ],
@@ -144,41 +269,52 @@ class GoodsCard extends StatelessWidget {
             ),
           ),
           Positioned(
-            top: 0,
-            right: 0,
-            child: IconButton(
-                onPressed: () {
-                  showCupertinoDialog(
-                      context: context,
-                      builder: (context) {
-                        return CupertinoAlertDialog(
-                          title: const Text("是否删除"),
-                          content: Text(data.name),
-                          actions: [
-                            CupertinoDialogAction(
-                              child: const Text("取消"),
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                            ),
-                            CupertinoDialogAction(
-                              child: const Text(
-                                "删除",
-                                style: TextStyle(color: Colors.red),
-                              ),
-                              onPressed: () {
-                                onDelete.call();
-                                Navigator.pop(context);
-                              },
-                            ),
-                          ],
-                        );
-                      });
-                },
-                icon: const Icon(
-                  Icons.delete,
-                  color: Colors.red,
-                )),
+            top: 15,
+            right: 20,
+            child: CupertinoButton(
+              padding: EdgeInsets.zero,
+              minSize: 36,
+              child: const Icon(
+                CupertinoIcons.delete,
+                color: CupertinoColors.systemRed,
+                size: 24,
+              ),
+              onPressed: () {
+                showCupertinoDialog(
+                  context: context,
+                  builder: (context) {
+                    return CupertinoAlertDialog(
+                      title: const Text("删除此商品？"),
+                      content: Text(
+                        '确定要删除"${widget.data.name}"吗？\n此操作无法撤销。',
+                        style: TextStyle(
+                          color: CupertinoColors.secondaryLabel
+                              .resolveFrom(context),
+                        ),
+                      ),
+                      actions: [
+                        CupertinoDialogAction(
+                          child: const Text("取消",
+                              style: TextStyle(
+                                  color: CupertinoColors.secondaryLabel)),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                        ),
+                        CupertinoDialogAction(
+                          isDestructiveAction: true,
+                          child: const Text("删除"),
+                          onPressed: () {
+                            widget.onDelete.call();
+                            Navigator.pop(context);
+                          },
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+            ),
           )
         ],
       ),
