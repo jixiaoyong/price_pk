@@ -1,9 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:price_pk/ext.dart';
 import 'package:price_pk/pk_classify.dart';
 import 'package:price_pk/price_input_box_logic.dart';
+import 'package:price_pk/widgets/price_input_formatter.dart';
 
 class GoodsCard extends StatelessWidget {
   const GoodsCard(
@@ -72,10 +72,8 @@ class GoodsCard extends StatelessWidget {
                     Expanded(
                       flex: 5,
                       child: TextFormField(
-                        initialValue: "${data.price}",
-                        inputFormatters: [
-                          RemoveLeadingZerosFormatter(decimalPlaces: 2)
-                        ],
+                        initialValue: "${data.price == 0 ? '' : data.price}",
+                        inputFormatters: [PriceInputFormatter(decimalRange: 2)],
                         keyboardType: const TextInputType.numberWithOptions(
                             decimal: true),
                         decoration: const InputDecoration(
@@ -105,7 +103,7 @@ class GoodsCard extends StatelessWidget {
                       flex: 5,
                       child: TextFormField(
                         initialValue: "${data.unit.value}",
-                        inputFormatters: [RemoveLeadingZerosFormatter()],
+                        inputFormatters: [PriceInputFormatter(decimalRange: 3)],
                         keyboardType: const TextInputType.numberWithOptions(
                             decimal: true),
                         style: const TextStyle(
@@ -184,51 +182,6 @@ class GoodsCard extends StatelessWidget {
           )
         ],
       ),
-    );
-  }
-}
-
-class RemoveLeadingZerosFormatter extends TextInputFormatter {
-  RemoveLeadingZerosFormatter({this.decimalPlaces = 0});
-
-  final int decimalPlaces;
-
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    // 去除前导零
-    var newText = newValue.text.replaceAll(RegExp(r'^0+'), '');
-
-    // 根据输入数字决定保留的小数位数
-    newText = double.parse(newText).toStringAsFixed(decimalPlaces);
-
-    // 获取旧值和新值
-    final oldText = oldValue.text;
-    final delta = newText.length - oldText.length;
-
-    // 计算新的光标位置
-    int newCursorPosition;
-    if (delta != 0) {
-      // 新增字符或减少字符
-      // 判断是末尾还是中间
-      if (oldValue.selection.baseOffset == oldText.length) {
-        // 末尾，光标置于末尾
-        newCursorPosition = newText.length;
-      } else {
-        // 中间新增，光标置于新增文本的末尾;删除中间字符，光标向前移动
-        newCursorPosition = oldValue.selection.baseOffset + delta;
-      }
-    } else {
-      // 修改字符
-      // 保持光标位置不变
-      newCursorPosition = oldValue.selection.baseOffset;
-    }
-
-    return TextEditingValue(
-      text: newText,
-      selection: TextSelection.collapsed(offset: newCursorPosition),
     );
   }
 }
