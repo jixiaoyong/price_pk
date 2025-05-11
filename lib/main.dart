@@ -40,7 +40,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage>
     with SingleTickerProviderStateMixin {
   final PriceInputBoxLogic logic = Get.put(PriceInputBoxLogic());
-
+  final ScrollController _scrollController = ScrollController();
   late TabController _tabController;
 
   @override
@@ -85,6 +85,8 @@ class _MyHomePageState extends State<MyHomePage>
                 var goodsList = tabValue.goods;
                 final units = tabValue.units;
                 return ListView.builder(
+                  physics: const ClampingScrollPhysics(),
+                  controller: _scrollController,
                   itemBuilder: (context, index) {
                     if (index >= goodsList.length) {
                       return Column(
@@ -95,6 +97,14 @@ class _MyHomePageState extends State<MyHomePage>
                                     unit: tabValue.defaultUnit,
                                     name: "商品${goodsList.length + 1}"));
                                 tabValue.goods = goodsList;
+                                WidgetsBinding.instance
+                                    .addPostFrameCallback((_) {
+                                  _scrollController.animateTo(
+                                    _scrollController.position.maxScrollExtent,
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut,
+                                  );
+                                });
                               },
                               child: const Text("添加商品")),
                         ],
@@ -103,7 +113,8 @@ class _MyHomePageState extends State<MyHomePage>
                     var goods = goodsList[index];
                     var isHighlight =
                         goods.prePrice.value == tabValue.minPrePrice.value &&
-                            0 != goods.prePrice.value;
+                            0 != goods.prePrice.value &&
+                            double.maxFinite != goods.prePrice.value;
                     return GoodsCard(
                       key: ValueKey(goods.id),
                       data: goods,

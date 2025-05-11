@@ -30,7 +30,8 @@ class GoodsCard extends StatefulWidget {
 
 class _GoodsCardState extends State<GoodsCard> {
   late final TextEditingController unitController;
-  late final FocusNode unitFocusNode;
+  late final TextEditingController goodsPriceController;
+  late final FocusNode goodsPriceFocusNode;
 
   @override
   void initState() {
@@ -39,30 +40,24 @@ class _GoodsCardState extends State<GoodsCard> {
       text:
           widget.data.unit.value == 0 ? '0' : widget.data.unit.value.toString(),
     );
-    unitFocusNode = FocusNode();
-    unitFocusNode.addListener(() {
-      if (unitFocusNode.hasFocus && unitController.text == '0') {
-        unitController.selection = TextSelection(
-            baseOffset: 0, extentOffset: unitController.text.length);
+    goodsPriceController = TextEditingController(
+      text: "${widget.data.price == 0 ? '' : widget.data.price}",
+    );
+    goodsPriceFocusNode = FocusNode();
+    goodsPriceFocusNode.addListener(() {
+      if (!goodsPriceFocusNode.hasFocus &&
+          goodsPriceController.text.isNotEmpty) {
+        goodsPriceController.text =
+            double.parse(goodsPriceController.text).toCurrencyString();
+        setState(() {});
       }
     });
   }
 
   @override
-  void didUpdateWidget(covariant GoodsCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // 外部数据变化时同步内容
-    final newText =
-        widget.data.unit.value == 0 ? '0' : widget.data.unit.value.toString();
-    if (unitController.text != newText) {
-      unitController.text = newText;
-    }
-  }
-
-  @override
   void dispose() {
     unitController.dispose();
-    unitFocusNode.dispose();
+    goodsPriceFocusNode.dispose();
     super.dispose();
   }
 
@@ -134,7 +129,9 @@ class _GoodsCardState extends State<GoodsCard> {
                           ),
                         ),
                         TextSpan(
-                          text: prePrice.value.toCurrencyString(),
+                          text: double.maxFinite == prePrice.value
+                              ? '--'
+                              : prePrice.value.toCurrencyString(),
                           style: TextStyle(
                             color: CupertinoColors.label.resolveFrom(context),
                             fontSize: 32,
@@ -159,8 +156,8 @@ class _GoodsCardState extends State<GoodsCard> {
                     Expanded(
                       flex: 5,
                       child: TextFormField(
-                        initialValue:
-                            "${widget.data.price == 0 ? '' : widget.data.price}",
+                        controller: goodsPriceController,
+                        focusNode: goodsPriceFocusNode,
                         inputFormatters: [PriceInputFormatter(decimalRange: 2)],
                         keyboardType: const TextInputType.numberWithOptions(
                             decimal: true),
@@ -191,7 +188,6 @@ class _GoodsCardState extends State<GoodsCard> {
                       flex: 5,
                       child: TextFormField(
                         controller: unitController,
-                        focusNode: unitFocusNode,
                         inputFormatters: [PriceInputFormatter(decimalRange: 3)],
                         keyboardType: const TextInputType.numberWithOptions(
                             decimal: true),
@@ -202,9 +198,21 @@ class _GoodsCardState extends State<GoodsCard> {
                         decoration: const InputDecoration(
                             label: Text("商品总量"), border: OutlineInputBorder()),
                         onChanged: (value) {
+                          final double doubleValue =
+                              double.tryParse(value) ?? 0.0;
                           widget.onChange(widget.data.copyWith(
-                              unit: widget.fromString(widget.data.unit.unit,
-                                  double.tryParse(value) ?? 0.0)));
+                            unit: widget.fromString(
+                              widget.data.unit.unit,
+                              doubleValue,
+                            ),
+                          ));
+                        },
+                        onTap: () {
+                          if (unitController.text == '0') {
+                            unitController.selection = TextSelection(
+                                baseOffset: 0,
+                                extentOffset: unitController.text.length);
+                          }
                         },
                       ),
                     ),

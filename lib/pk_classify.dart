@@ -62,9 +62,11 @@ abstract class WeightUnit extends UnitClass {
     var grams = toGrams();
     var price = priceYuan ?? 0;
 
-    var prePrice = price / grams;
+    var prePrice = 0.0;
     if (0 == grams) {
-      prePrice = price * double.maxFinite;
+      prePrice = double.maxFinite;
+    } else {
+      prePrice = price / grams;
     }
     return Gram(prePrice);
   }
@@ -132,9 +134,11 @@ abstract class VolumeUnit extends UnitClass {
     var mls = toMilliliters();
     var price = priceYuan ?? 0;
 
-    var prePrice = price / mls;
+    var prePrice = 0.0;
     if (0.0 == mls) {
       prePrice = price * double.maxFinite;
+    } else {
+      prePrice = price / mls;
     }
     return Milliliter(prePrice);
   }
