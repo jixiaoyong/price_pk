@@ -38,6 +38,16 @@ abstract class UnitClass {
   factory UnitClass.fromString(String unitName, double value) {
     throw UnsupportedError("$unitName 不支持");
   }
+  
+  /// Convert the unit to a JSON-serializable map
+  Map<String, dynamic> toJson() {
+    return {
+      'value': value,
+      'unit': unit,
+      'type': runtimeType.toString(),
+    };
+  }
+  
 }
 
 abstract class WeightUnit extends UnitClass {
@@ -92,6 +102,12 @@ class Milligram extends WeightUnit {
 
   @override
   double toGrams() => value / 1000;
+  
+  @override
+  Map<String, dynamic> toJson() => {
+    ...super.toJson(),
+    'type': 'Milligram',
+  };
 }
 
 class Gram extends WeightUnit {
@@ -99,6 +115,12 @@ class Gram extends WeightUnit {
 
   @override
   double toGrams() => value;
+  
+  @override
+  Map<String, dynamic> toJson() => {
+    ...super.toJson(),
+    'type': 'Gram',
+  };
 }
 
 class Kilogram extends WeightUnit {
@@ -106,6 +128,12 @@ class Kilogram extends WeightUnit {
 
   @override
   double toGrams() => value * 1000;
+  
+  @override
+  Map<String, dynamic> toJson() => {
+    ...super.toJson(),
+    'type': 'Kilogram',
+  };
 }
 
 class Ton extends WeightUnit {
@@ -113,6 +141,12 @@ class Ton extends WeightUnit {
 
   @override
   double toGrams() => value * 1000000;
+  
+  @override
+  Map<String, dynamic> toJson() => {
+    ...super.toJson(),
+    'type': 'Ton',
+  };
 }
 
 abstract class VolumeUnit extends UnitClass {
@@ -160,6 +194,12 @@ class Liter extends VolumeUnit {
 
   @override
   double toMilliliters() => value * 1000;
+  
+  @override
+  Map<String, dynamic> toJson() => {
+    ...super.toJson(),
+    'type': 'Liter',
+  };
 }
 
 class Milliliter extends VolumeUnit {
@@ -167,4 +207,10 @@ class Milliliter extends VolumeUnit {
 
   @override
   double toMilliliters() => value;
+  
+  @override
+  Map<String, dynamic> toJson() => {
+    ...super.toJson(),
+    'type': 'Milliliter',
+  };
 }

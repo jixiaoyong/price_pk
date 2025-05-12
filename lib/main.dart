@@ -46,7 +46,19 @@ class _MyHomePageState extends State<MyHomePage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: logic.tabs.length, vsync: this);
+    _tabController = TabController(
+        length: logic.tabs.length,
+        vsync: this,
+        initialIndex: logic.currentTabIndex);
+    _tabController.addListener(() {
+      logic.currentTabIndex = _tabController.index;
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
@@ -61,6 +73,55 @@ class _MyHomePageState extends State<MyHomePage>
         actions: [
           TextButton(
               onPressed: () {
+                showCupertinoDialog(
+                  context: context,
+                  builder: (context) {
+                    return CupertinoAlertDialog(
+                      title: const Text("删除此分类所有数据？"),
+                      content: Text(
+                        '确定要删除当前页面的所有数据吗？\n此操作无法撤销。',
+                        style: TextStyle(
+                          color: CupertinoColors.secondaryLabel
+                              .resolveFrom(context),
+                        ),
+                      ),
+                      actions: [
+                        CupertinoDialogAction(
+                          child: const Text("取消",
+                              style: TextStyle(
+                                  color: CupertinoColors.secondaryLabel)),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                        ),
+                        CupertinoDialogAction(
+                          isDestructiveAction: true,
+                          child: const Text("删除"),
+                          onPressed: () {
+                            logic.cleanAll();
+                            Navigator.pop(context);
+                          },
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              child: Column(
+                children: [
+                  const Icon(
+                    CupertinoIcons.delete,
+                    color: CupertinoColors.systemRed,
+                    size: 24,
+                  ),
+                  Text(
+                    "删除",
+                    style: Theme.of(context).textTheme.labelSmall,
+                  ),
+                ],
+              )),
+          TextButton(
+              onPressed: () {
                 logic.sort();
               },
               child: Column(
@@ -68,6 +129,19 @@ class _MyHomePageState extends State<MyHomePage>
                   const Icon(Icons.sort),
                   Text(
                     "排序",
+                    style: Theme.of(context).textTheme.labelSmall,
+                  ),
+                ],
+              )),
+          TextButton(
+              onPressed: () {
+                logic.share();
+              },
+              child: Column(
+                children: [
+                  const Icon(Icons.share),
+                  Text(
+                    "分享",
                     style: Theme.of(context).textTheme.labelSmall,
                   ),
                 ],
