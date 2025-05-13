@@ -18,7 +18,10 @@ class ShareScreenshotWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: cupertino.CupertinoColors.systemGroupedBackground,
+      decoration: BoxDecoration(
+        color: cupertino.CupertinoColors.systemGroupedBackground,
+        borderRadius: BorderRadius.circular(10),
+      ),
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -35,14 +38,14 @@ class ShareScreenshotWidget extends StatelessWidget {
                 ),
               ],
             ),
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+            margin: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 QrImageView(
                   data: shareUrl,
-                  size: 60,
+                  size: 80,
                   backgroundColor: material.Colors.white,
                 ),
                 const SizedBox(width: 10),
