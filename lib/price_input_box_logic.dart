@@ -9,6 +9,10 @@ import 'package:web/web.dart';
 import 'package:get/get.dart';
 import 'package:price_pk/pk_classify.dart';
 import 'package:lzstring/lzstring.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+
+import 'widgets/screenshot_dialog.dart';
 
 class PriceInputBoxLogic extends GetxController {
   int currentTabIndex = 0;
@@ -89,7 +93,8 @@ class PriceInputBoxLogic extends GetxController {
       final uri = Uri.parse(url ?? window.location.href);
       final compressed = uri.queryParameters['data'];
       if (compressed != null && compressed.isNotEmpty) {
-        final jsonStr = await LZString.decompressFromEncodedURIComponent(compressed);
+        final jsonStr =
+            await LZString.decompressFromEncodedURIComponent(compressed);
         if (jsonStr != null && jsonStr.isNotEmpty) {
           final data = jsonDecode(jsonStr);
           final tabIndex = int.tryParse(data['tab'] ?? '0') ?? 0;
@@ -188,5 +193,14 @@ class PriceInputBoxLogic extends GetxController {
         .writeText(url.toString())
         .toDart
         .then((_) => Get.snackbar('成功', '链接已经复制到剪贴板'));
+  }
+
+  Future<void> shareByScreenshot(
+      BuildContext context, TabController tabController) async {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) => ScreenshotDialog(tabController: tabController),
+    );
   }
 }

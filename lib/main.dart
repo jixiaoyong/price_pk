@@ -43,6 +43,7 @@ class _MyHomePageState extends State<MyHomePage>
   final PriceInputBoxLogic logic = Get.put(PriceInputBoxLogic());
   final ScrollController _scrollController = ScrollController();
   late TabController _tabController;
+  final GlobalKey screenshotKey = GlobalKey();
 
   @override
   void initState() {
@@ -146,70 +147,86 @@ class _MyHomePageState extends State<MyHomePage>
                     style: Theme.of(context).textTheme.labelSmall,
                   ),
                 ],
-              ))
+              )),
+          TextButton(
+              onPressed: () {
+                logic.shareByScreenshot(context, _tabController);
+              },
+              child: Column(
+                children: [
+                  const Icon(Icons.camera_alt),
+                  Text(
+                    "截图",
+                    style: Theme.of(context).textTheme.labelSmall,
+                  ),
+                ],
+              )),
         ],
         bottom: TabBar(
             controller: _tabController,
             tabs: logic.tabs.map((e) => Tab(text: e.name)).toList()),
       ),
-      body: Obx(
-        () {
-          return TabBarView(
-              controller: _tabController,
-              children: logic.tabs.map((tabValue) {
-                var goodsList = tabValue.goods;
-                final units = tabValue.units;
-                return ListView.builder(
-                  physics: const ClampingScrollPhysics(),
-                  controller: _scrollController,
-                  itemBuilder: (context, index) {
-                    if (index >= goodsList.length) {
-                      return Column(
-                        children: [
-                          TextButton(
-                              onPressed: () {
-                                goodsList.add(InputBoxState(
-                                    unit: tabValue.defaultUnit,
-                                    name: "商品${goodsList.length + 1}"));
-                                tabValue.goods = goodsList;
-                                WidgetsBinding.instance
-                                    .addPostFrameCallback((_) {
-                                  _scrollController.animateTo(
-                                    _scrollController.position.maxScrollExtent,
-                                    duration: const Duration(milliseconds: 300),
-                                    curve: Curves.easeInOut,
-                                  );
-                                });
-                              },
-                              child: const Text("添加商品")),
-                        ],
+      body: RepaintBoundary(
+        key: screenshotKey,
+        child: Obx(
+          () {
+            return TabBarView(
+                controller: _tabController,
+                children: logic.tabs.map((tabValue) {
+                  var goodsList = tabValue.goods;
+                  final units = tabValue.units;
+                  return ListView.builder(
+                    physics: const ClampingScrollPhysics(),
+                    controller: _scrollController,
+                    itemBuilder: (context, index) {
+                      if (index >= goodsList.length) {
+                        return Column(
+                          children: [
+                            TextButton(
+                                onPressed: () {
+                                  goodsList.add(InputBoxState(
+                                      unit: tabValue.defaultUnit,
+                                      name: "商品${goodsList.length + 1}"));
+                                  tabValue.goods = goodsList;
+                                  WidgetsBinding.instance
+                                      .addPostFrameCallback((_) {
+                                    _scrollController.animateTo(
+                                      _scrollController.position.maxScrollExtent,
+                                      duration: const Duration(milliseconds: 300),
+                                      curve: Curves.easeInOut,
+                                    );
+                                  });
+                                },
+                                child: const Text("添加商品")),
+                          ],
+                        );
+                      }
+                      var goods = goodsList[index];
+                      var isHighlight =
+                          goods.prePrice.value == tabValue.minPrePrice.value &&
+                              0 != goods.prePrice.value &&
+                              double.maxFinite != goods.prePrice.value;
+                      return GoodsCard(
+                        key: ValueKey(goods.id),
+                        data: goods,
+                        unitList: units,
+                        isHighlight: isHighlight,
+                        onChange: (InputBoxState state) {
+                          goodsList[index] = state;
+                          tabValue.goods = goodsList;
+                        },
+                        onDelete: () {
+                          goodsList.removeAt(index);
+                          tabValue.goods = goodsList;
+                        },
+                        fromString: tabValue.fromString,
                       );
-                    }
-                    var goods = goodsList[index];
-                    var isHighlight =
-                        goods.prePrice.value == tabValue.minPrePrice.value &&
-                            0 != goods.prePrice.value &&
-                            double.maxFinite != goods.prePrice.value;
-                    return GoodsCard(
-                      key: ValueKey(goods.id),
-                      data: goods,
-                      unitList: units,
-                      isHighlight: isHighlight,
-                      onChange: (InputBoxState state) {
-                        goodsList[index] = state;
-                        tabValue.goods = goodsList;
-                      },
-                      onDelete: () {
-                        goodsList.removeAt(index);
-                        tabValue.goods = goodsList;
-                      },
-                      fromString: tabValue.fromString,
-                    );
-                  },
-                  itemCount: goodsList.length + 1,
-                );
-              }).toList());
-        },
+                    },
+                    itemCount: goodsList.length + 1,
+                  );
+                }).toList());
+          },
+        ),
       ),
     );
   }
