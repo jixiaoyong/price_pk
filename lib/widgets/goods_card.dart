@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:price_pk/beans/input_box_state.dart';
 import 'package:price_pk/beans/unit_class.dart';
 import 'package:price_pk/ext.dart';
-import 'package:price_pk/pk_classify.dart';
-import 'package:price_pk/price_input_box_logic.dart';
 import 'package:price_pk/widgets/price_input_formatter.dart';
 
 class GoodsCard extends StatefulWidget {
@@ -40,7 +38,7 @@ class _GoodsCardState extends State<GoodsCard> {
     super.initState();
     unitController = TextEditingController(
       text:
-          widget.data.unit.value == 0 ? '0' : widget.data.unit.value.toString(),
+          widget.data.unit.value == 0 ? '' : widget.data.unit.value.toString(),
     );
     goodsPriceController = TextEditingController(
       text: "${widget.data.price == 0 ? '' : widget.data.price}",
@@ -92,20 +90,23 @@ class _GoodsCardState extends State<GoodsCard> {
             padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
             child: Column(
               children: [
-                TextFormField(
-                  initialValue: widget.data.name,
-                  textAlign: TextAlign.center,
-                  keyboardType: TextInputType.name,
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
+                Padding(
+                  padding: const EdgeInsets.only(right: 30),
+                  child: TextFormField(
+                    initialValue: widget.data.name,
+                    textAlign: TextAlign.center,
+                    keyboardType: TextInputType.name,
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                    ),
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: CupertinoColors.activeBlue,
+                        ),
+                    onChanged: (value) {
+                      widget.onChange(widget.data.copyWith(name: value));
+                    },
                   ),
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: CupertinoColors.activeBlue,
-                      ),
-                  onChanged: (value) {
-                    widget.onChange(widget.data.copyWith(name: value));
-                  },
                 ),
                 Padding(
                   padding: const EdgeInsets.only(bottom: 18),
@@ -154,36 +155,54 @@ class _GoodsCardState extends State<GoodsCard> {
                   ),
                 ),
                 Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Expanded(
+                    Flexible(
                       flex: 5,
+                      fit: FlexFit.loose,
                       child: TextFormField(
                         controller: goodsPriceController,
                         focusNode: goodsPriceFocusNode,
                         inputFormatters: [PriceInputFormatter(decimalRange: 2)],
                         keyboardType: const TextInputType.numberWithOptions(
                             decimal: true),
-                        decoration: const InputDecoration(
-                            label: Text("商品总价"), border: OutlineInputBorder()),
-                        style: const TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
+                        decoration: InputDecoration(
+                          label: const Text("请输入商品总价"),
+                          hintText: "比如10.00",
+                          hintStyle: const TextStyle(
+                              color: CupertinoColors.systemGrey,
+                              fontWeight: FontWeight.normal),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(
+                              color: CupertinoColors.activeBlue,
+                              width: 2,
+                            ),
+                          ),
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 12),
                         ),
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: CupertinoColors.label,
+                        ),
+                        textAlign: TextAlign.right,
+                        minLines: 1,
+                        maxLines: 1,
                         onChanged: (value) {
                           widget.onChange(widget.data
                               .copyWith(price: double.tryParse(value) ?? 0.0));
                         },
                       ),
                     ),
-                    const Expanded(
-                      flex: 1,
-                      child: Center(child: Text("元")),
-                    )
+                    const SizedBox(width: 6),
+                    const Text("元", style: TextStyle(fontSize: 16)),
                   ],
                 ),
-                const Padding(
-                  padding: EdgeInsets.only(top: 20),
-                ),
+                const SizedBox(height: 20),
                 Row(
                   children: [
                     Expanded(
@@ -193,12 +212,25 @@ class _GoodsCardState extends State<GoodsCard> {
                         inputFormatters: [PriceInputFormatter(decimalRange: 3)],
                         keyboardType: const TextInputType.numberWithOptions(
                             decimal: true),
-                        style: const TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                        ),
                         decoration: const InputDecoration(
-                            label: Text("商品总量"), border: OutlineInputBorder()),
+                          label: Text("请输入商品总量"),
+                          hintText: "比如100",
+                          hintStyle: TextStyle(
+                              color: CupertinoColors.systemGrey,
+                              fontWeight: FontWeight.normal),
+                          border: OutlineInputBorder(),
+                          isDense: true,
+                          contentPadding: EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 12),
+                        ),
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: CupertinoColors.label,
+                        ),
+                        textAlign: TextAlign.right,
+                        minLines: 1,
+                        maxLines: 1,
                         onChanged: (value) {
                           final double doubleValue =
                               double.tryParse(value) ?? 0.0;
@@ -218,61 +250,55 @@ class _GoodsCardState extends State<GoodsCard> {
                         },
                       ),
                     ),
-                    Expanded(
-                      flex: 1,
-                      child: Container(
-                        height: 48,
-                        margin: const EdgeInsets.only(left: 8),
-                        padding: const EdgeInsets.symmetric(horizontal: 5),
-                        decoration: BoxDecoration(
-                          color:
-                              CupertinoColors.systemGrey6.resolveFrom(context),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: CupertinoColors.systemGrey4,
-                            width: 1,
-                          ),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: widget.data.unit.unit,
-                            isExpanded: true,
-                            icon: const Icon(CupertinoIcons.chevron_down,
-                                size: 20, color: CupertinoColors.systemGrey),
-                            dropdownColor: CupertinoColors.systemGrey6
-                                .resolveFrom(context),
-                            borderRadius: BorderRadius.circular(12),
-                            style: TextStyle(
-                              color: CupertinoColors.label.resolveFrom(context),
-                              fontSize: 18,
-                            ),
-                            items: widget.unitList
-                                .map((e) => DropdownMenuItem(
-                                      value: e,
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        e,
-                                        style: TextStyle(
-                                          color: e == widget.data.unit.unit
-                                              ? CupertinoColors.activeBlue
-                                              : CupertinoColors.label
-                                                  .resolveFrom(context),
-                                          fontWeight: e == widget.data.unit.unit
-                                              ? FontWeight.bold
-                                              : FontWeight.normal,
-                                        ),
-                                      ),
-                                    ))
-                                .toList(growable: false),
-                            onChanged: (unitName) {
-                              widget.onChange(widget.data.copyWith(
-                                  unit: widget.fromString(
-                                      unitName!, widget.data.unit.value)));
-                            },
-                          ),
+                    const SizedBox(width: 6),
+                    Container(
+                      height: 40,
+                      margin: const EdgeInsets.only(left: 0),
+                      padding: const EdgeInsets.symmetric(horizontal: 5),
+                      decoration: BoxDecoration(
+                        color: CupertinoColors.systemGrey6,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: CupertinoColors.systemGrey4,
+                          width: 1,
                         ),
                       ),
-                    )
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: widget.data.unit.unit,
+                          icon: const Icon(CupertinoIcons.chevron_down,
+                              size: 18, color: CupertinoColors.systemGrey),
+                          dropdownColor: CupertinoColors.systemGrey6,
+                          borderRadius: BorderRadius.circular(10),
+                          style: const TextStyle(
+                            color: CupertinoColors.label,
+                            fontSize: 16,
+                          ),
+                          items: widget.unitList
+                              .map((e) => DropdownMenuItem(
+                                    value: e,
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      e,
+                                      style: TextStyle(
+                                        color: e == widget.data.unit.unit
+                                            ? CupertinoColors.activeBlue
+                                            : CupertinoColors.label,
+                                        fontWeight: e == widget.data.unit.unit
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
+                                      ),
+                                    ),
+                                  ))
+                              .toList(growable: false),
+                          onChanged: (unitName) {
+                            widget.onChange(widget.data.copyWith(
+                                unit: widget.fromString(
+                                    unitName!, widget.data.unit.value)));
+                          },
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ],
