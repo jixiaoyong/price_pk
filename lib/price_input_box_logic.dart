@@ -8,6 +8,7 @@ import 'package:web/web.dart';
 
 import 'package:get/get.dart';
 import 'package:price_pk/pk_classify.dart';
+import 'package:lzstring/lzstring.dart';
 
 class PriceInputBoxLogic extends GetxController {
   int currentTabIndex = 0;
@@ -83,9 +84,50 @@ class PriceInputBoxLogic extends GetxController {
     refresh();
   }
 
-  bool decodeUri({String? url}) {
+  Future<bool> decodeUri({String? url}) async {
     try {
       final uri = Uri.parse(url ?? window.location.href);
+      final compressed = uri.queryParameters['data'];
+      if (compressed != null && compressed.isNotEmpty) {
+        final jsonStr = await LZString.decompressFromEncodedURIComponent(compressed);
+        if (jsonStr != null && jsonStr.isNotEmpty) {
+          final data = jsonDecode(jsonStr);
+          final tabIndex = int.tryParse(data['tab'] ?? '0') ?? 0;
+          currentTabIndex = tabIndex;
+
+          weightGoods.value = [];
+          volumeGoods.value = [];
+
+          final goodsData = data['volumeGoods'] ?? [];
+          final weightData = data['weightGoods'] ?? [];
+          if (goodsData.isNotEmpty) {
+            for (var i = 0; i < goodsData.length; i++) {
+              volumeGoods.add(InputBoxState.fromJson(goodsData[i]));
+            }
+          } else {
+            volumeGoods.value = List<InputBoxState>.generate(
+                2,
+                (index) => InputBoxState(
+                    name: "商品${index + 1}", unit: Milliliter(0.0)));
+          }
+
+          if (weightData.isNotEmpty) {
+            for (var i = 0; i < weightData.length; i++) {
+              weightGoods.add(InputBoxState.fromJson(weightData[i]));
+            }
+          } else {
+            weightGoods.value = List<InputBoxState>.generate(
+                2,
+                (index) =>
+                    InputBoxState(name: "商品${index + 1}", unit: Gram(0.0)));
+          }
+
+          refresh();
+          return true;
+        }
+        return false;
+      }
+      // 兼容老版本参数
       final params = uri.queryParameters;
 
       if (!params.containsKey('tab') ||
@@ -130,15 +172,20 @@ class PriceInputBoxLogic extends GetxController {
     }
   }
 
-  void share() {
-    final url = Uri.parse(window.location.href).replace(queryParameters: {
+  Future<void> share() async {
+    final data = {
       'tab': "$currentTabIndex",
-      'weightGoods': jsonEncode(weightGoods.value),
-      'volumeGoods': jsonEncode(volumeGoods.value)
-    });
+      'weightGoods': weightGoods.value.map((e) => e.toJson()).toList(),
+      'volumeGoods': volumeGoods.value.map((e) => e.toJson()).toList(),
+    };
+    final jsonStr = jsonEncode(data);
+    final compressed = await LZString.compressToEncodedURIComponent(jsonStr);
+
+    final url = Uri.parse(window.location.href)
+        .replace(queryParameters: {'data': compressed});
 
     window.navigator.clipboard
-        ?.writeText(url.toString())
+        .writeText(url.toString())
         .toDart
         .then((_) => Get.snackbar('成功', '链接已经复制到剪贴板'));
   }
