@@ -163,34 +163,51 @@ class _ScreenshotDialogState extends State<ScreenshotDialog> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton.icon(
-                      icon: const Icon(Icons.copy),
-                      label: const Text('复制到剪贴板'),
-                      onPressed: () {
-                        js.context
-                            .callMethod('copyImageToClipboard', [pngBytes]);
-                        Navigator.pop(context);
-                        Get.snackbar('成功', '截图已复制到剪贴板');
-                      },
-                    ),
-                    ElevatedButton.icon(
-                      icon: const Icon(Icons.download),
-                      label: const Text('保存到本地'),
-                      onPressed: () {
-                        final blob = html.Blob([pngBytes!]);
-                        final url = html.Url.createObjectUrlFromBlob(blob);
-                        final anchor = html.AnchorElement(href: url)
-                          ..setAttribute('download', 'pk_screenshot.png')
-                          ..click();
-                        html.Url.revokeObjectUrl(url);
-                        Navigator.pop(context);
-                        Get.snackbar('成功', '截图已保存到本地');
-                      },
-                    ),
-                  ],
+                Builder(
+                  builder: (context) {
+                    final screenWidth = MediaQuery.of(context).size.width;
+                    final canRow = screenWidth > 400;
+                    final buttons = [
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.copy),
+                        label: const Text('复制到剪贴板'),
+                        onPressed: () {
+                          js.context.callMethod('copyImageToClipboard', [pngBytes]);
+                          Navigator.pop(context);
+                          Get.snackbar('成功', '截图已复制到剪贴板');
+                        },
+                      ),
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.download),
+                        label: const Text('保存到本地'),
+                        onPressed: () {
+                          final blob = html.Blob([pngBytes!]);
+                          final url = html.Url.createObjectUrlFromBlob(blob);
+                          final anchor = html.AnchorElement(href: url)
+                            ..setAttribute('download', 'pk_screenshot.png')
+                            ..click();
+                          html.Url.revokeObjectUrl(url);
+                          Navigator.pop(context);
+                          Get.snackbar('成功', '截图已保存到本地');
+                        },
+                      ),
+                    ];
+                    if (canRow) {
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: buttons,
+                      );
+                    } else {
+                      return Column(
+                        children: [
+                          ...buttons.map((b) => Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 4),
+                                child: b,
+                              )),
+                        ],
+                      );
+                    }
+                  },
                 ),
               ],
             ),

@@ -10,7 +10,6 @@ import 'package:get/get.dart';
 import 'package:price_pk/pk_classify.dart';
 import 'package:lzstring/lzstring.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 
 import 'widgets/screenshot_dialog.dart';
 

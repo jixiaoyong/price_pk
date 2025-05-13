@@ -59,24 +59,27 @@ class ShareScreenshotWidget extends StatelessWidget {
         children: [
           qrWidget,
           const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const material.Text(
-                '扫码打开当前比价',
-                style: material.TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 18,
-                  color: material.Colors.black87,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const material.Text(
+                  '扫码打开当前比价',
+                  style: material.TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 18,
+                    color: material.Colors.black87,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              material.SelectableText(
-                baseUrl,
-                style: const material.TextStyle(
-                    fontSize: 12, color: cupertino.CupertinoColors.activeBlue),
-              ),
-            ],
+                const SizedBox(height: 4),
+                material.SelectableText(
+                  baseUrl,
+                  style: const material.TextStyle(
+                      fontSize: 12,
+                      color: cupertino.CupertinoColors.activeBlue),
+                ),
+              ],
+            ),
           ),
         ],
       );
