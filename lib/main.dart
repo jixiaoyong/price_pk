@@ -67,101 +67,135 @@ class _MyHomePageState extends State<MyHomePage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: CupertinoColors.activeBlue,
-                )),
-        actions: [
-          TextButton(
-              onPressed: () {
-                showCupertinoDialog(
-                  context: context,
-                  builder: (context) {
-                    return CupertinoAlertDialog(
-                      title: const Text("删除此分类所有数据？"),
-                      content: Text(
-                        '确定要删除当前页面的所有数据吗？\n此操作无法撤销。',
-                        style: TextStyle(
-                          color: CupertinoColors.secondaryLabel
-                              .resolveFrom(context),
-                        ),
-                      ),
-                      actions: [
-                        CupertinoDialogAction(
-                          child: const Text("取消",
-                              style: TextStyle(
-                                  color: CupertinoColors.secondaryLabel)),
+        automaticallyImplyLeading: false,
+        toolbarHeight: 66,
+        flexibleSpace: SafeArea(
+          child: Stack(
+            children: [
+              Positioned(
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 56), // 预留两侧空间
+                    child: Text(
+                      widget.title,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: CupertinoColors.activeBlue,
+                          ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                right: 0,
+                top: 35,
+                bottom: 10,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextButton(
                           onPressed: () {
-                            Navigator.pop(context);
+                            showCupertinoDialog(
+                              context: context,
+                              builder: (context) {
+                                return CupertinoAlertDialog(
+                                  title: const Text("删除此分类所有数据？"),
+                                  content: Text(
+                                    '确定要删除当前页面的所有数据吗？\n此操作无法撤销。',
+                                    style: TextStyle(
+                                      color: CupertinoColors.secondaryLabel
+                                          .resolveFrom(context),
+                                    ),
+                                  ),
+                                  actions: [
+                                    CupertinoDialogAction(
+                                      child: const Text("取消",
+                                          style: TextStyle(
+                                              color: CupertinoColors
+                                                  .secondaryLabel)),
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                    ),
+                                    CupertinoDialogAction(
+                                      isDestructiveAction: true,
+                                      child: const Text("删除"),
+                                      onPressed: () {
+                                        logic.cleanAll();
+                                        Navigator.pop(context);
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
                           },
-                        ),
-                        CupertinoDialogAction(
-                          isDestructiveAction: true,
-                          child: const Text("删除"),
+                          child: Column(
+                            children: [
+                              const Icon(
+                                CupertinoIcons.delete,
+                                color: CupertinoColors.systemRed,
+                                size: 24,
+                              ),
+                              Text(
+                                "删除",
+                                style: Theme.of(context).textTheme.labelSmall,
+                              ),
+                            ],
+                          )),
+                      TextButton(
                           onPressed: () {
-                            logic.cleanAll();
-                            Navigator.pop(context);
+                            logic.sort();
                           },
-                        ),
-                      ],
-                    );
-                  },
-                );
-              },
-              child: Column(
-                children: [
-                  const Icon(
-                    CupertinoIcons.delete,
-                    color: CupertinoColors.systemRed,
-                    size: 24,
+                          child: Column(
+                            children: [
+                              const Icon(Icons.sort),
+                              Text(
+                                "排序",
+                                style: Theme.of(context).textTheme.labelSmall,
+                              ),
+                            ],
+                          )),
+                      TextButton(
+                          onPressed: () {
+                            logic.share();
+                          },
+                          child: Column(
+                            children: [
+                              const Icon(Icons.share),
+                              Text(
+                                "分享",
+                                style: Theme.of(context).textTheme.labelSmall,
+                              ),
+                            ],
+                          )),
+                      TextButton(
+                          onPressed: () {
+                            logic.shareByScreenshot(context, _tabController);
+                          },
+                          child: Column(
+                            children: [
+                              const Icon(Icons.camera_alt),
+                              Text(
+                                "截图",
+                                style: Theme.of(context).textTheme.labelSmall,
+                              ),
+                            ],
+                          )),
+                    ],
                   ),
-                  Text(
-                    "删除",
-                    style: Theme.of(context).textTheme.labelSmall,
-                  ),
-                ],
-              )),
-          TextButton(
-              onPressed: () {
-                logic.sort();
-              },
-              child: Column(
-                children: [
-                  const Icon(Icons.sort),
-                  Text(
-                    "排序",
-                    style: Theme.of(context).textTheme.labelSmall,
-                  ),
-                ],
-              )),
-          TextButton(
-              onPressed: () {
-                logic.share();
-              },
-              child: Column(
-                children: [
-                  const Icon(Icons.share),
-                  Text(
-                    "分享",
-                    style: Theme.of(context).textTheme.labelSmall,
-                  ),
-                ],
-              )),
-          TextButton(
-              onPressed: () {
-                logic.shareByScreenshot(context, _tabController);
-              },
-              child: Column(
-                children: [
-                  const Icon(Icons.camera_alt),
-                  Text(
-                    "截图",
-                    style: Theme.of(context).textTheme.labelSmall,
-                  ),
-                ],
-              )),
-        ],
+                ),
+              ),
+            ],
+          ),
+        ),
         bottom: TabBar(
             controller: _tabController,
             tabs: logic.tabs.map((e) => Tab(text: e.name)).toList()),
@@ -191,8 +225,10 @@ class _MyHomePageState extends State<MyHomePage>
                                   WidgetsBinding.instance
                                       .addPostFrameCallback((_) {
                                     _scrollController.animateTo(
-                                      _scrollController.position.maxScrollExtent,
-                                      duration: const Duration(milliseconds: 300),
+                                      _scrollController
+                                          .position.maxScrollExtent,
+                                      duration:
+                                          const Duration(milliseconds: 300),
                                       curve: Curves.easeInOut,
                                     );
                                   });
