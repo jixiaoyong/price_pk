@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:price_pk/beans/input_box_state.dart';
 import 'package:price_pk/price_input_box_logic.dart';
 
 import 'widgets/goods_card.dart';

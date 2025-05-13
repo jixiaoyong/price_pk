@@ -1,6 +1,10 @@
 import 'dart:convert';
-import 'dart:html';
+import 'dart:js_interop';
 import 'dart:math';
+import 'package:price_pk/beans/input_box_state.dart';
+import 'package:price_pk/beans/volume_unit.dart';
+import 'package:price_pk/beans/weight_unit.dart';
+import 'package:web/web.dart';
 
 import 'package:get/get.dart';
 import 'package:price_pk/pk_classify.dart';
@@ -13,7 +17,7 @@ class PriceInputBoxLogic extends GetxController {
         name: "重量",
         units: ["mg", "g", "kg", "t"],
         goods: weightGoods,
-        defaultUnit: Milligram(0.0),
+        defaultUnit: Gram(0.0),
         minPrePrice: weightMinValue,
         fromString: WeightUnit.fromString),
     PKClassify(
@@ -84,18 +88,15 @@ class PriceInputBoxLogic extends GetxController {
       final uri = Uri.parse(url ?? window.location.href);
       final params = uri.queryParameters;
 
-      // Check if required parameters exist
       if (!params.containsKey('tab') ||
           !params.containsKey('volumeGoods') ||
           !params.containsKey('weightGoods')) {
         return false;
       }
 
-      // Parse active tab
       final tabIndex = int.tryParse(params['tab'] ?? '0') ?? 0;
       currentTabIndex = tabIndex;
 
-      // Clear existing goods
       weightGoods.value = [];
       volumeGoods.value = [];
 
@@ -132,88 +133,13 @@ class PriceInputBoxLogic extends GetxController {
   void share() {
     final url = Uri.parse(window.location.href).replace(queryParameters: {
       'tab': "$currentTabIndex",
-      'weightGoods': jsonEncode(weightGoods.value ?? []),
-      'volumeGoods': jsonEncode(volumeGoods.value ?? [])
+      'weightGoods': jsonEncode(weightGoods.value),
+      'volumeGoods': jsonEncode(volumeGoods.value)
     });
 
     window.navigator.clipboard
         ?.writeText(url.toString())
+        .toDart
         .then((_) => Get.snackbar('成功', '链接已经复制到剪贴板'));
-  }
-}
-
-class InputBoxState {
-  String name;
-  double? price;
-  UnitClass unit;
-  late int id;
-
-  static int _id = 0;
-
-  UnitClass get prePrice => unit.prePrice(price);
-
-  InputBoxState(
-      {this.price = 0.0, required this.unit, this.name = "", int? id}) {
-    this.id = id ?? ++_id;
-  }
-
-  /// Convert the InputBoxState to a JSON-serializable map
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'price': price,
-      'unit': unit.toJson(),
-      'id': id,
-    };
-  }
-
-  /// Create an InputBoxState from a JSON map
-  factory InputBoxState.fromJson(Map<String, dynamic> json) {
-    final unitData = json['unit'] as Map<String, dynamic>;
-    final unitType = unitData['type'] as String;
-    final unitValue = unitData['value'] as double;
-
-    UnitClass unit;
-
-    // Handle different unit types
-    switch (unitType) {
-      case 'Milligram':
-        unit = Milligram(unitValue);
-        break;
-      case 'Gram':
-        unit = Gram(unitValue);
-        break;
-      case 'Kilogram':
-        unit = Kilogram(unitValue);
-        break;
-      case 'Ton':
-        unit = Ton(unitValue);
-        break;
-      case 'Liter':
-        unit = Liter(unitValue);
-        break;
-      case 'Milliliter':
-        unit = Milliliter(unitValue);
-        break;
-      default:
-        throw UnsupportedError('Unsupported unit type: $unitType');
-    }
-
-    return InputBoxState(
-      name: json['name'] as String? ?? '',
-      price: json['price'] as double?,
-      unit: unit,
-      id: json['id'] as int? ?? 0,
-    );
-  }
-
-  InputBoxState copyWith(
-      {double? price, UnitClass? unit, String? name, int? id}) {
-    return InputBoxState(
-      price: price ?? this.price,
-      unit: unit ?? this.unit,
-      name: name ?? this.name,
-      id: id ?? this.id,
-    );
   }
 }

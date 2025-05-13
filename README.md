@@ -1,16 +1,35 @@
 # price_pk
 
-性价比大PK：单位价格比对
+性价比大 PK：单位价格比对
 
-## Getting Started
+https://jixiaoyong.github.io/price_pk/
 
-This project is a starting point for a Flutter application.
+## 软件核心功能总结
 
-A few resources to get you started if this is your first Flutter project:
+本软件是一款“性价比大 PK”工具，主要用于对比不同商品的单位价格，帮助用户快速判断哪种商品更划算。支持**重量**（mg/g/kg/t）和**体积**（ml/l）两大类商品的对比。用户可以输入多个商品的总价和总量，软件会自动计算每个商品的单位均价，并高亮显示性价比最高的商品。支持商品的添加、删除、排序和数据清空，还可以一键分享当前对比数据。
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+---
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 主要功能细节
+
+### 商品对比
+
+- 支持**重量**和**体积**两种分类，用户可在 TabBar 选择。
+- 每个分类下可添加多个商品，每个商品可输入名称、总价、总量及单位。
+- 自动计算每个商品的单位均价（如元/克、元/毫升），并以大号字体展示。
+- 性价比最低（单位价格最低）的商品会高亮显示，便于用户一目了然。
+
+### 商品管理
+
+- 可随时添加、删除商品。
+- 支持一键清空当前分类下所有商品数据，操作有二次确认弹窗，防止误删。
+- 支持对商品按单位价格排序，方便查看性价比排名。
+
+### 单位换算
+
+- 内置重量和体积的多种常用单位，支持毫克、克、千克、吨、毫升、升等。
+- 用户可在下拉菜单中切换单位，自动完成单位换算和均价重新计算。
+
+### 数据分享
+
+- 支持将当前对比数据生成带参数的链接，并自动复制到剪贴板，方便分享给他人或在多端打开。
