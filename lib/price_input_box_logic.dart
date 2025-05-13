@@ -178,16 +178,7 @@ class PriceInputBoxLogic extends GetxController {
   }
 
   Future<void> share() async {
-    final data = {
-      'tab': "$currentTabIndex",
-      'weightGoods': weightGoods.value.map((e) => e.toJson()).toList(),
-      'volumeGoods': volumeGoods.value.map((e) => e.toJson()).toList(),
-    };
-    final jsonStr = jsonEncode(data);
-    final compressed = await LZString.compressToEncodedURIComponent(jsonStr);
-
-    final url = Uri.parse(window.location.href)
-        .replace(queryParameters: {'data': compressed});
+    final url = await getShareUrl();
 
     window.navigator.clipboard
         .writeText(url.toString())
@@ -200,7 +191,20 @@ class PriceInputBoxLogic extends GetxController {
     showDialog(
       context: context,
       barrierDismissible: true,
-      builder: (ctx) => ScreenshotDialog(tabController: tabController),
+      builder: (ctx) => const ScreenshotDialog(),
     );
+  }
+
+  /// 获取分享链接
+  Future<Uri> getShareUrl() async {
+    final data = {
+      'tab': "$currentTabIndex",
+      'weightGoods': weightGoods.value.map((e) => e.toJson()).toList(),
+      'volumeGoods': volumeGoods.value.map((e) => e.toJson()).toList(),
+    };
+    final jsonStr = jsonEncode(data);
+    final compressed = await LZString.compressToEncodedURIComponent(jsonStr);
+    return Uri.parse(window.location.href)
+        .replace(queryParameters: {'data': compressed});
   }
 }

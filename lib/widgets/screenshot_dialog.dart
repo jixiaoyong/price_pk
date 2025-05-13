@@ -13,8 +13,7 @@ import 'dart:html' as html;
 import 'goods_card.dart';
 
 class ScreenshotDialog extends StatefulWidget {
-  final TabController tabController;
-  const ScreenshotDialog({super.key, required this.tabController});
+  const ScreenshotDialog({super.key});
 
   @override
   State<ScreenshotDialog> createState() => _ScreenshotDialogState();
@@ -38,14 +37,15 @@ class _ScreenshotDialogState extends State<ScreenshotDialog> {
     final tab = logic.tabs[tabIndex];
     final goodsList = tab.goods;
     final units = tab.units;
-    final shareUrl = Uri.base.toString();
-    final baseUrl = Uri.base.removeFragment().replace(query: '').toString().replaceAll(RegExp(r'\?$'), '');
+    final shareUrl = await logic.getShareUrl();
+    String baseUrl = html.window.location.href;
+    baseUrl = baseUrl.replaceAll(RegExp(r'\?(?=#|$)'), '');
 
     final repaintKey = GlobalKey();
     final content = Material(
       color: Colors.transparent,
       child: ShareScreenshotWidget(
-        shareUrl: shareUrl,
+        shareUrl: shareUrl.toString(),
         baseUrl: baseUrl,
         content: Column(
           children: goodsList.map((goods) {
@@ -73,7 +73,6 @@ class _ScreenshotDialogState extends State<ScreenshotDialog> {
       ),
     );
 
-    // 关键：OverlayEntry最外层用UnconstrainedBox
     final overlay = OverlayEntry(
       builder: (_) => Stack(
         children: [
@@ -109,29 +108,29 @@ class _ScreenshotDialogState extends State<ScreenshotDialog> {
     );
     Overlay.of(context).insert(overlay);
 
-    // 等待至少两帧，确保渲染
     await Future.delayed(const Duration(milliseconds: 16));
     await Future.delayed(const Duration(milliseconds: 16));
 
-    // 等待paint完成
     RenderRepaintBoundary? boundary;
     int retry = 0;
     while (retry < 30) {
       await Future.delayed(const Duration(milliseconds: 33));
-      boundary = repaintKey.currentContext?.findRenderObject()
-          as RenderRepaintBoundary?;
-      if (boundary != null && !boundary.debugNeedsPaint) {
+      final renderObject = repaintKey.currentContext?.findRenderObject();
+      if (renderObject is RenderRepaintBoundary) {
+        boundary = renderObject;
         break;
+      } else {
+        boundary = null;
       }
       retry++;
     }
-    if (boundary == null || boundary.debugNeedsPaint) {
+    if (boundary == null) {
       overlay.remove();
       throw Exception('截图渲染失败，请重试');
     }
     overlay.remove();
 
-    final image = await boundary!.toImage(pixelRatio: 3.0);
+    final image = await boundary.toImage(pixelRatio: 3.0);
     final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
     setState(() {
       pngBytes = byteData!.buffer.asUint8List();
