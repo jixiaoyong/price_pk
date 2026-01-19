@@ -19,4 +19,5 @@ export interface CategoryData {
     category: UnitCategory;
     units: UnitInfo[];
     items: GoodsItem[];
+    defaultUnit: string;
 }

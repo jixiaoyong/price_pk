@@ -3,11 +3,23 @@
   import { Plus, SortAsc, Share2, Camera, Eraser } from 'lucide-vue-next';
   import { usePriceStore } from '../stores/usePriceStore';
   import ConfirmDialog from './ConfirmDialog.vue';
+  import ToastMessage from './ToastMessage.vue';
 
   const store = usePriceStore();
 
   const emit = defineEmits(['screenshot']);
   const showClearConfirm = ref(false);
+  const showToast = ref(false);
+  const toastMessage = ref('');
+  const toastType = ref<'success' | 'info' | 'warning' | 'error'>('success');
+  const showManualCopyDialog = ref(false);
+  const manualCopyUrl = ref('');
+
+  const showSuccessToast = (message: string) => {
+    toastMessage.value = message;
+    toastType.value = 'success';
+    showToast.value = true;
+  };
 
   const onShareLink = async () => {
     const url = store.generateShareUrl();
@@ -16,7 +28,7 @@
     if (navigator.clipboard && window.isSecureContext) {
       try {
         await navigator.clipboard.writeText(url);
-        alert('分享链接已复制到剪贴板');
+        showSuccessToast('分享链接已复制到剪贴板');
         return;
       } catch (err) {
         console.warn('Clipboard API failed, trying fallback', err);
@@ -36,14 +48,16 @@
     try {
       const success = document.execCommand('copy');
       if (success) {
-        alert('分享链接已复制到剪贴板');
+        showSuccessToast('分享链接已复制到剪贴板');
       } else {
         // 如果复制失败，显示链接让用户手动复制
-        prompt('请手动复制以下链接：', url);
+        manualCopyUrl.value = url;
+        showManualCopyDialog.value = true;
       }
     } catch (err) {
       console.error('Fallback copy failed', err);
-      prompt('请手动复制以下链接：', url);
+      manualCopyUrl.value = url;
+      showManualCopyDialog.value = true;
     } finally {
       document.body.removeChild(textArea);
     }
@@ -91,6 +105,13 @@
 
   <ConfirmDialog v-if="showClearConfirm" message="确定要清除当前分类的所有商品数据吗？此操作无法撤销。" confirm-text="确定清空" :danger="true"
     @confirm="confirmClear" @cancel="showClearConfirm = false" />
+
+  <!-- 手动复制链接弹窗 -->
+  <ConfirmDialog v-if="showManualCopyDialog" title="复制链接" :message="'请长按下方链接手动复制：\n' + manualCopyUrl" confirm-text="知道了"
+    @confirm="showManualCopyDialog = false" @cancel="showManualCopyDialog = false" />
+
+  <!-- Toast 提示 -->
+  <ToastMessage v-if="showToast" :message="toastMessage" :type="toastType" @close="showToast = false" />
 </template>
 
 <style scoped>

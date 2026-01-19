@@ -52,7 +52,7 @@
     </div>
 
     <div v-if="unitPrice" class="card-footer">
-      <div class="result-label">单位分值 (元/{{category.units.find(u => u.factor === 1)?.label}})</div>
+      <div class="result-label">单价 (元/{{category.units.find(u => u.factor === 1)?.label}})</div>
       <div class="result-value">{{ unitPrice }}</div>
     </div>
   </div>
@@ -70,8 +70,8 @@
 
   .is-cheapest {
     border: 2px solid var(--success);
-    transform: scale(1.02);
-    background: rgba(16, 185, 129, 0.05);
+    background: rgba(16, 185, 129, 0.08);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
   }
 
   .is-cheapest::before {
