@@ -1,7 +1,9 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import type { CategoryData, GoodsItem } from '../types';
 import LZString from 'lz-string';
+
+const STORAGE_KEY = 'price_pk_data';
 
 // 兼容性 UUID 生成器 (兜底非 Secure Context 如局域网 IP 访问)
 const safeUuid = () => {
@@ -39,6 +41,42 @@ export const usePriceStore = defineStore('price', () => {
             items: [
                 { id: safeUuid(), name: '商品1', price: null, amount: null, unit: 'ml' },
                 { id: safeUuid(), name: '商品2', price: null, amount: null, unit: 'ml' },
+            ],
+        },
+        {
+            name: '数量',
+            category: 'count',
+            units: [
+                { label: '个', value: '个', factor: 1 },
+            ],
+            items: [
+                { id: safeUuid(), name: '商品1', price: null, amount: null, unit: '个' },
+                { id: safeUuid(), name: '商品2', price: null, amount: null, unit: '个' },
+            ],
+        },
+        {
+            name: '长度',
+            category: 'length',
+            units: [
+                { label: 'cm', value: 'cm', factor: 0.01 },
+                { label: 'm', value: 'm', factor: 1 },
+                { label: 'km', value: 'km', factor: 1000 },
+            ],
+            items: [
+                { id: safeUuid(), name: '商品1', price: null, amount: null, unit: 'm' },
+                { id: safeUuid(), name: '商品2', price: null, amount: null, unit: 'm' },
+            ],
+        },
+        {
+            name: '面积',
+            category: 'area',
+            units: [
+                { label: 'cm²', value: 'cm²', factor: 0.0001 },
+                { label: 'm²', value: 'm²', factor: 1 },
+            ],
+            items: [
+                { id: safeUuid(), name: '商品1', price: null, amount: null, unit: 'm²' },
+                { id: safeUuid(), name: '商品2', price: null, amount: null, unit: 'm²' },
             ],
         },
     ]);
@@ -162,6 +200,70 @@ export const usePriceStore = defineStore('price', () => {
         }
     };
 
+    // --- LocalStorage 持久化 ---
+    const saveToLocalStorage = () => {
+        try {
+            const data = {
+                tab: currentCategoryIndex.value,
+                categories: categories.value.map(cat => ({
+                    ...cat,
+                    items: cat.items.map(item => ({
+                        name: item.name,
+                        price: item.price,
+                        amount: item.amount,
+                        unit: item.unit,
+                    }))
+                }))
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        } catch (e) {
+            console.error('Failed to save to localStorage', e);
+        }
+    };
+
+    const loadFromLocalStorage = () => {
+        try {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (!stored) return false;
+            const data = JSON.parse(stored);
+
+            currentCategoryIndex.value = data.tab || 0;
+            // 确保 tab 索引不越界
+            if (currentCategoryIndex.value >= categories.value.length) {
+                currentCategoryIndex.value = 0;
+            }
+
+            if (data.categories && Array.isArray(data.categories)) {
+                data.categories.forEach((savedCat: any) => {
+                    // 通过分类名称匹配，而非索引
+                    const targetCat = categories.value.find(c => c.name === savedCat.name);
+                    if (targetCat && savedCat.items && Array.isArray(savedCat.items)) {
+                        targetCat.items = savedCat.items.map((item: any) => ({
+                            id: safeUuid(),
+                            name: item.name,
+                            price: item.price,
+                            amount: item.amount,
+                            unit: item.unit,
+                        }));
+                    }
+                });
+            }
+            return true;
+        } catch (e) {
+            console.error('Failed to load from localStorage', e);
+            return false;
+        }
+    };
+
+    // 监听数据变化并自动保存
+    watch(
+        [categories, currentCategoryIndex],
+        () => {
+            saveToLocalStorage();
+        },
+        { deep: true }
+    );
+
     return {
         categories,
         currentCategoryIndex,
@@ -174,5 +276,6 @@ export const usePriceStore = defineStore('price', () => {
         sortItems,
         generateShareUrl,
         loadFromUrl,
+        loadFromLocalStorage,
     };
 });

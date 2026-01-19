@@ -14,7 +14,13 @@
   const { needRefresh, updateServiceWorker } = useRegisterSW();
 
   onMounted(() => {
-    store.loadFromUrl();
+    // 优先从 URL 加载数据，如果没有则从 localStorage 恢复
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('data')) {
+      store.loadFromUrl();
+    } else {
+      store.loadFromLocalStorage();
+    }
   });
 
   const onScreenshot = () => {

@@ -1,4 +1,4 @@
-export type UnitCategory = 'weight' | 'volume';
+export type UnitCategory = 'weight' | 'volume' | 'count' | 'length' | 'area';
 
 export interface UnitInfo {
     label: string;
