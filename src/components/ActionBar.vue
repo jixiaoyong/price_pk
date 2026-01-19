@@ -1,26 +1,62 @@
 <script setup lang="ts">
-import { Plus, SortAsc, Share2, Camera, Eraser } from 'lucide-vue-next';
-import { usePriceStore } from '../stores/usePriceStore';
+  import { ref } from 'vue';
+  import { Plus, SortAsc, Share2, Camera, Eraser } from 'lucide-vue-next';
+  import { usePriceStore } from '../stores/usePriceStore';
+  import ConfirmDialog from './ConfirmDialog.vue';
 
-const store = usePriceStore();
+  const store = usePriceStore();
 
-const emit = defineEmits(['screenshot']);
+  const emit = defineEmits(['screenshot']);
+  const showClearConfirm = ref(false);
 
-const onShareLink = async () => {
-  const url = store.generateShareUrl();
-  try {
-    await navigator.clipboard.writeText(url);
-    alert('分享链接已复制到剪辑板');
-  } catch (err) {
-    console.error('Failed to copy', err);
-  }
-};
+  const onShareLink = async () => {
+    const url = store.generateShareUrl();
 
-const onClear = () => {
-  if (confirm('确定要清除当前页面的所有数据吗？')) {
+    // 尝试使用现代 Clipboard API
+    if (navigator.clipboard && window.isSecureContext) {
+      try {
+        await navigator.clipboard.writeText(url);
+        alert('分享链接已复制到剪贴板');
+        return;
+      } catch (err) {
+        console.warn('Clipboard API failed, trying fallback', err);
+      }
+    }
+
+    // Fallback: 使用临时 textarea 元素
+    const textArea = document.createElement('textarea');
+    textArea.value = url;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-9999px';
+    textArea.style.top = '-9999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+      const success = document.execCommand('copy');
+      if (success) {
+        alert('分享链接已复制到剪贴板');
+      } else {
+        // 如果复制失败，显示链接让用户手动复制
+        prompt('请手动复制以下链接：', url);
+      }
+    } catch (err) {
+      console.error('Fallback copy failed', err);
+      prompt('请手动复制以下链接：', url);
+    } finally {
+      document.body.removeChild(textArea);
+    }
+  };
+
+  const onClear = () => {
+    showClearConfirm.value = true;
+  };
+
+  const confirmClear = () => {
     store.clearAll();
-  }
-};
+    showClearConfirm.value = false;
+  };
 </script>
 
 <template>
@@ -29,7 +65,7 @@ const onClear = () => {
       <Plus :size="20" />
       <span>添加</span>
     </button>
-    
+
     <div class="divider"></div>
 
     <button class="action-btn" @click="store.sortItems" title="按价格排序">
@@ -52,60 +88,64 @@ const onClear = () => {
       <span>清空</span>
     </button>
   </div>
+
+  <ConfirmDialog v-if="showClearConfirm" message="确定要清除当前分类的所有商品数据吗？此操作无法撤销。" confirm-text="确定清空" :danger="true"
+    @confirm="confirmClear" @cancel="showClearConfirm = false" />
 </template>
 
 <style scoped>
-.action-bar {
-  position: fixed;
-  bottom: 2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  padding: 8px 16px;
-  border-radius: 24px;
-  gap: 8px;
-  z-index: 100;
-  width: max-content;
-  max-width: 90vw;
-}
-
-.action-btn {
-  flex-direction: column;
-  padding: 8px;
-  min-width: 54px;
-  background: transparent;
-  color: var(--text-main);
-  font-size: 0.75rem;
-  gap: 4px;
-}
-
-.action-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-}
-
-.action-btn.primary {
-  color: var(--primary);
-}
-
-.action-btn.danger {
-  color: var(--danger);
-}
-
-.divider {
-  width: 1px;
-  height: 24px;
-  background: var(--glass-border);
-  margin: 0 4px;
-}
-
-@media (max-width: 400px) {
-  .action-btn span {
-    display: none;
+  .action-bar {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    border-radius: 24px;
+    gap: 8px;
+    z-index: 100;
+    width: max-content;
+    max-width: 90vw;
   }
+
   .action-btn {
-    min-width: 44px;
+    flex-direction: column;
+    padding: 8px;
+    min-width: 54px;
+    background: transparent;
+    color: var(--text-main);
+    font-size: 0.75rem;
+    gap: 4px;
   }
-}
+
+  .action-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+  }
+
+  .action-btn.primary {
+    color: var(--primary);
+  }
+
+  .action-btn.danger {
+    color: var(--danger);
+  }
+
+  .divider {
+    width: 1px;
+    height: 24px;
+    background: var(--glass-border);
+    margin: 0 4px;
+  }
+
+  @media (max-width: 400px) {
+    .action-btn span {
+      display: none;
+    }
+
+    .action-btn {
+      min-width: 44px;
+    }
+  }
 </style>
