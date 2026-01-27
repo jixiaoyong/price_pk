@@ -73,9 +73,11 @@
 <template>
   <div class="relative transition-all duration-300 rounded-2xl p-4 overflow-visible" :class="isCheapest
     ? 'shadow-lg scale-[1.02]'
-    : 'shadow-sm opacity-95'" :style="isCheapest
-      ? { backgroundColor: '#ffffff', boxShadow: '0 0 0 2px #007AFF, 0 10px 15px -3px rgba(219, 234, 254, 0.5)', zIndex: 5 }
-      : { backgroundColor: '#ffffff', border: '1px solid #e2e8f0', zIndex: 1 }">
+    : 'shadow-sm opacity-95'" :style="isUnitDropdownOpen
+      ? { backgroundColor: '#ffffff', boxShadow: isCheapest ? '0 0 0 2px #007AFF, 0 10px 15px -3px rgba(219, 234, 254, 0.5)' : 'none', border: isCheapest ? 'none' : '1px solid #e2e8f0', zIndex: 1000 }
+      : isCheapest
+        ? { backgroundColor: '#ffffff', boxShadow: '0 0 0 2px #007AFF, 0 10px 15px -3px rgba(219, 234, 254, 0.5)', zIndex: 5 }
+        : { backgroundColor: '#ffffff', border: '1px solid #e2e8f0', zIndex: 1 }">
     <!-- Winner Badge -->
     <div v-if="isCheapest"
       class="absolute -top-px -right-px text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl rounded-tr-xl shadow-sm flex items-center gap-1 z-20"
