@@ -39,10 +39,19 @@ export const usePriceStore = defineStore('price', () => {
     });
 
     const addItem = () => {
-        const nextNumber = currentCategory.value.items.length + 1;
+        // Find a unique name by incrementing number if needed
+        let nextNumber = currentCategory.value.items.length + 1;
+        let proposedName = `商品${nextNumber}`;
+
+        // Keep incrementing until we find a unique name
+        while (currentCategory.value.items.some(item => item.name === proposedName)) {
+            nextNumber++;
+            proposedName = `商品${nextNumber}`;
+        }
+
         currentCategory.value.items.push({
             id: generateId(),
-            name: `商品${nextNumber}`,
+            name: proposedName,
             price: null,
             amount: null,
             unit: currentCategory.value.defaultUnit,

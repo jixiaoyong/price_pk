@@ -1,115 +1,43 @@
 <script setup lang="ts">
-    import { AlertTriangle } from 'lucide-vue-next';
+    import { X } from 'lucide-vue-next';
 
     defineProps<{
-        title?: string;
+        title: string;
         message: string;
         confirmText?: string;
         cancelText?: string;
-        danger?: boolean;
+        type?: 'danger' | 'primary';
     }>();
 
-    const emit = defineEmits(['confirm', 'cancel']);
+    defineEmits(['confirm', 'cancel']);
 </script>
 
 <template>
-    <Teleport to="body">
-        <div class="confirm-overlay" @click.self="emit('cancel')">
-            <div class="confirm-dialog glass-panel">
-                <div class="dialog-icon" :class="{ danger }">
-                    <AlertTriangle :size="32" />
-                </div>
-                <h3 class="dialog-title">{{ title || '确认操作' }}</h3>
-                <p class="dialog-message">{{ message }}</p>
-                <div class="dialog-actions">
-                    <button class="btn cancel-btn" @click="emit('cancel')">
-                        {{ cancelText || '取消' }}
-                    </button>
-                    <button class="btn confirm-btn" :class="{ danger }" @click="emit('confirm')">
-                        {{ confirmText || '确定' }}
-                    </button>
-                </div>
+    <div
+        class="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-200">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold text-slate-900">{{ title }}</h3>
+                <button @click="$emit('cancel')" class="p-1 hover:bg-slate-100 rounded-full transition-colors">
+                    <X class="w-5 h-5 text-slate-500" />
+                </button>
+            </div>
+
+            <p class="text-slate-600 font-medium">
+                {{ message }}
+            </p>
+
+            <div class="flex gap-3 pt-2">
+                <button @click="$emit('cancel')"
+                    class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-bold transition-colors">
+                    {{ cancelText || '取消' }}
+                </button>
+                <button @click="$emit('confirm')"
+                    class="flex-1 py-2.5 text-white rounded-xl font-bold transition-colors shadow-sm"
+                    :class="type === 'danger' ? 'bg-red-500 hover:bg-red-600 shadow-red-200' : 'bg-[#007AFF] hover:bg-blue-600 shadow-blue-200'">
+                    {{ confirmText || '确认' }}
+                </button>
             </div>
         </div>
-    </Teleport>
+    </div>
 </template>
-
-<style scoped>
-    .confirm-overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.4);
-        backdrop-filter: blur(4px);
-        z-index: 2000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 1.5rem;
-    }
-
-    .confirm-dialog {
-        width: 100%;
-        max-width: 320px;
-        border-radius: 20px;
-        padding: 1.5rem;
-        text-align: center;
-    }
-
-    .dialog-icon {
-        width: 56px;
-        height: 56px;
-        border-radius: 50%;
-        background: rgba(59, 130, 246, 0.1);
-        color: var(--primary);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 1rem;
-    }
-
-    .dialog-icon.danger {
-        background: rgba(239, 68, 68, 0.1);
-        color: var(--danger);
-    }
-
-    .dialog-title {
-        margin: 0 0 0.5rem;
-        font-size: 1.1rem;
-        font-weight: 600;
-    }
-
-    .dialog-message {
-        margin: 0 0 1.5rem;
-        font-size: 0.9rem;
-        color: var(--text-muted);
-        line-height: 1.5;
-    }
-
-    .dialog-actions {
-        display: flex;
-        gap: 0.75rem;
-    }
-
-    .btn {
-        flex: 1;
-        padding: 12px;
-        border-radius: 12px;
-        font-weight: 600;
-        font-size: 0.9rem;
-    }
-
-    .cancel-btn {
-        background: var(--glass-bg);
-        border: 1px solid var(--glass-border);
-        color: var(--text-muted);
-    }
-
-    .confirm-btn {
-        background: var(--primary-gradient);
-        color: white;
-    }
-
-    .confirm-btn.danger {
-        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-    }
-</style>

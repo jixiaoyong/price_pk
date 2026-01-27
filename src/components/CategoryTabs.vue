@@ -1,41 +1,31 @@
 <script setup lang="ts">
+  import { Scale, Droplets, Hash, Ruler, Square } from 'lucide-vue-next';
   import { usePriceStore } from '../stores/usePriceStore';
+  import type { UnitCategory } from '../types';
 
   const store = usePriceStore();
+
+  const iconMap: Record<UnitCategory, any> = {
+    weight: Scale,
+    volume: Droplets,
+    count: Hash,
+    length: Ruler,
+    area: Square,
+  };
 </script>
 
 <template>
-  <div class="tabs-container glass-panel">
-    <button v-for="(cat, index) in store.categories" :key="cat.name" class="tab-btn"
-      :class="{ 'active': store.currentCategoryIndex === index }" @click="store.currentCategoryIndex = index">
+  <div class="bg-white p-1 rounded-xl shadow-sm border border-slate-200 grid grid-cols-5 gap-1 mb-5"
+    style="background-color: #ffffff; border-color: #e2e8f0;">
+    <button v-for="(cat, index) in store.categories" :key="cat.name" @click="store.currentCategoryIndex = index"
+      class="flex flex-col items-center justify-center gap-1 py-2 rounded-lg text-[10px] font-bold transition-all duration-200"
+      :class="store.currentCategoryIndex === index
+        ? 'shadow-md'
+        : ''" :style="store.currentCategoryIndex === index
+          ? { backgroundColor: '#007AFF', color: '#ffffff' }
+          : { color: '#94a3b8', backgroundColor: 'transparent' }">
+      <component :is="iconMap[cat.category]" class="w-4 h-4" />
       {{ cat.name }}
     </button>
   </div>
 </template>
-
-<style scoped>
-  .tabs-container {
-    display: flex;
-    padding: 4px;
-    border-radius: 12px;
-    margin-bottom: 2rem;
-    gap: 4px;
-  }
-
-  .tab-btn {
-    flex: 1;
-    padding: 8px 4px;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 0.85rem;
-    white-space: nowrap;
-    color: var(--text-muted);
-    background: transparent;
-  }
-
-  .tab-btn.active {
-    background: var(--primary-gradient);
-    color: white;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-  }
-</style>
