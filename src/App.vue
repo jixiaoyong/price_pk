@@ -5,9 +5,11 @@
   import GoodsCard from './components/GoodsCard.vue';
   import Toast from './components/Toast.vue';
   import ConfirmDialog from './components/ConfirmDialog.vue';
-  import { Calculator, ArrowUpDown, Plus, RotateCcw, Link as LinkIcon, Image as ImageIcon } from 'lucide-vue-next';
+  import { Calculator, ArrowUpDown, Plus, RotateCcw, Link as LinkIcon, Image as ImageIcon, Languages } from 'lucide-vue-next';
   import { useRegisterSW } from 'virtual:pwa-register/vue';
   import domtoimage from 'dom-to-image';
+  import { useI18n } from 'vue-i18n';
+  import { setLocale } from './i18n';
 
   // PWA Service Worker registration
   useRegisterSW({
@@ -16,8 +18,8 @@
   });
 
   const store = usePriceStore();
+  const { t, locale } = useI18n();
   const captureRef = ref<HTMLElement | null>(null);
-  // const showShareModal = ref(false); // Removed
 
   // Toast State
   const showToast = ref(false);
@@ -44,9 +46,15 @@
     showToast.value = true;
   };
 
-  const onRequestDelete = (id: string) => {
+  const toggleLanguage = () => {
+    const newLocale = locale.value === 'zh' ? 'en' : 'zh';
+    setLocale(newLocale);
+    showToastMsg(t('messages.lang_switched'), 'success');
+  };
+
+  const onRequestDelete = (id: string) => { // Updated to accept name for better context if needed
     itemToDeleteId.value = id;
-    confirmMessage.value = '确定要删除这个商品吗？';
+    confirmMessage.value = t('goods.delete_confirm_desc');
     confirmAction.value = () => {
       if (itemToDeleteId.value) {
         store.removeItem(itemToDeleteId.value);
@@ -58,11 +66,11 @@
   };
 
   const onReset = () => {
-    confirmMessage.value = '确定要重置当前分类的所有数据吗？';
+    confirmMessage.value = t('messages.reset_confirm');
     confirmAction.value = () => {
       store.clearAll();
       showConfirm.value = false;
-      showToastMsg('已重置', 'success');
+      showToastMsg(t('messages.reset_success'), 'success');
     };
     showConfirm.value = true;
   };
@@ -74,7 +82,7 @@
     if (navigator.clipboard && window.isSecureContext) {
       try {
         await navigator.clipboard.writeText(url);
-        showToastMsg('链接已复制！快去分享给朋友吧', 'success');
+        showToastMsg(t('messages.link_copied'), 'success');
         return;
       } catch (err) {
         console.warn('Clipboard API failed, trying fallback', err);
@@ -96,18 +104,18 @@
       document.body.removeChild(textArea);
 
       if (successful) {
-        showToastMsg('链接已复制！快去分享给朋友吧', 'success');
+        showToastMsg(t('messages.link_copied'), 'success');
       } else {
         throw new Error('Fallback copy failed');
       }
     } catch (err) {
-      showToastMsg('复制失败，请手动复制地址栏链接', 'error');
+      showToastMsg('Copy failed', 'error');
     }
   };
 
   const generateImage = async () => {
     if (!captureRef.value) {
-      showToastMsg('无法获取截图区域，请刷新页面重试', 'error');
+      showToastMsg('Error capturing image', 'error');
       return;
     }
 
@@ -132,7 +140,7 @@
         await navigator.clipboard.write([
           new ClipboardItem({ 'image/png': blob })
         ]);
-        showToastMsg('图片已复制到剪贴板', 'success');
+        showToastMsg(t('messages.image_saved'), 'success');
         return;
       } catch (clipboardError) {
         console.log('Clipboard copy failed, falling back to download:', clipboardError);
@@ -141,14 +149,14 @@
       // Fallback to download
       const link = document.createElement('a');
       link.href = dataUrl;
-      link.download = `比价神器-${new Date().toLocaleDateString()}.png`;
+      link.download = `price-pk-${new Date().toLocaleDateString()}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      showToastMsg('图片已保存', 'success');
+      showToastMsg(t('messages.image_saved'), 'success');
     } catch (error) {
       console.error('dom-to-image error:', error);
-      showToastMsg('生成图片出错，请手动截图', 'error');
+      showToastMsg('Error generating image', 'error');
     }
   };
 </script>
@@ -163,18 +171,24 @@
         <div class="p-1.5 rounded-lg shadow-sm" style="background-color: #007AFF;">
           <Calculator class="w-5 h-5 text-white" />
         </div>
-        <h1 class="text-lg font-bold tracking-tight" style="color: #0f172a;">比价神器</h1>
+        <h1 class="text-lg font-bold tracking-tight" style="color: #0f172a;">{{ $t('app.title') }}</h1>
       </div>
       <div class="flex items-center gap-1">
         <button @click="store.sortItems" class="p-2 rounded-full transition-colors" style="color: #64748b;"
-          title="按单价排序">
+          :title="$t('actions.sort')">
           <ArrowUpDown class="w-5 h-5" />
         </button>
-        <button @click="copyLink" class="p-2 rounded-full transition-colors" style="color: #64748b;" title="复制链接">
+        <button @click="copyLink" class="p-2 rounded-full transition-colors" style="color: #64748b;"
+          :title="$t('actions.copy_link')">
           <LinkIcon class="w-5 h-5" />
         </button>
-        <button @click="generateImage" class="p-2 rounded-full transition-colors" style="color: #64748b;" title="保存图片">
+        <button @click="generateImage" class="p-2 rounded-full transition-colors" style="color: #64748b;"
+          :title="$t('actions.generate_image')">
           <ImageIcon class="w-5 h-5" />
+        </button>
+        <button @click="toggleLanguage" class="p-2 rounded-full transition-colors" style="color: #64748b;"
+          title="Language">
+          <Languages class="w-5 h-5" />
         </button>
       </div>
     </div>
@@ -204,13 +218,13 @@
             class="w-full py-3.5 text-white rounded-xl shadow-lg flex items-center justify-center gap-2 font-bold transition-all active:scale-[0.98]"
             style="background-color: #007AFF; box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);">
             <Plus class="w-5 h-5" />
-            添加对比项
+            {{ $t('app.add_item') }}
           </button>
 
           <button @click="onReset" class="w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2"
             style="background-color: #ffffff; color: #64748b; border: 1px solid #e2e8f0;">
             <RotateCcw class="w-4 h-4" />
-            重置当前
+            {{ $t('app.reset') }}
           </button>
         </div>
 
@@ -223,7 +237,7 @@
                 <Calculator class="w-5 h-5 text-white" />
               </div>
               <div class="flex flex-col min-w-0">
-                <span class="font-bold text-sm" style="color: #1e293b;">比价神器</span>
+                <span class="font-bold text-sm" style="color: #1e293b;">{{ $t('app.title') }}</span>
                 <span class="text-xs truncate" style="color: #94a3b8;">jixiaoyong.github.io/price_pk</span>
               </div>
             </div>
@@ -240,8 +254,8 @@
 
 
     <!-- Confirm Dialog -->
-    <ConfirmDialog v-if="showConfirm" title="确认操作" :message="confirmMessage" confirm-text="确认" type="danger"
-      @confirm="confirmAction" @cancel="showConfirm = false" />
+    <ConfirmDialog v-if="showConfirm" :title="$t('actions.confirm')" :message="confirmMessage"
+      :confirm-text="$t('actions.confirm')" type="danger" @confirm="confirmAction" @cancel="showConfirm = false" />
 
     <!-- Toast -->
     <Toast v-if="showToast" :message="toastMessage" :type="toastType" @close="showToast = false" />

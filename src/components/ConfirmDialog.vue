@@ -30,12 +30,12 @@
             <div class="flex gap-3 pt-2">
                 <button @click="$emit('cancel')"
                     class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-bold transition-colors">
-                    {{ cancelText || '取消' }}
+                    {{ cancelText || $t('actions.cancel') }}
                 </button>
                 <button @click="$emit('confirm')"
                     class="flex-1 py-2.5 text-white rounded-xl font-bold transition-colors shadow-sm"
                     :class="type === 'danger' ? 'bg-red-500 hover:bg-red-600 shadow-red-200' : 'bg-[#007AFF] hover:bg-blue-600 shadow-blue-200'">
-                    {{ confirmText || '确认' }}
+                    {{ confirmText || $t('actions.confirm') }}
                 </button>
             </div>
         </div>

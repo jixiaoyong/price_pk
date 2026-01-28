@@ -25,7 +25,7 @@
           ? { backgroundColor: '#007AFF', color: '#ffffff' }
           : { color: '#94a3b8', backgroundColor: 'transparent' }">
       <component :is="iconMap[cat.category]" class="w-4 h-4" />
-      {{ cat.name }}
+      {{ $t(cat.name) }}
     </button>
   </div>
 </template>

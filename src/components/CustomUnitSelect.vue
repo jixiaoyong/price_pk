@@ -3,6 +3,7 @@
     import { ChevronDown, Check } from 'lucide-vue-next';
     import type { UnitInfo } from '../types';
     import { removeUnitBrackets } from '../utils/unitHelper';
+    import { useI18n } from 'vue-i18n';
 
     const props = defineProps<{
         modelValue: string;
@@ -10,6 +11,7 @@
     }>();
 
     const emit = defineEmits(['update:modelValue', 'dropdown-toggle']);
+    const { t } = useI18n();
 
     const isOpen = ref(false);
     const containerRef = ref<HTMLElement | null>(null);
@@ -17,9 +19,13 @@
     // 计算当前选中的单位标签（去除括号后的简化版本）
     const selectedLabel = computed(() => {
         const selected = props.options.find(opt => opt.value === props.modelValue);
-        const label = selected ? selected.label : props.modelValue;
-        // 去除括号及其内容，使显示更简洁
-        return removeUnitBrackets(label);
+        // selected.label 现在是 key (例如 'unit.g')
+        const labelKey = selected ? selected.label : '';
+        // 如果找不到对应的 labelKey，就直接显示 modelValue (作为 fallback)
+        if (!labelKey) return props.modelValue;
+
+        // 先翻译，再去除括号
+        return removeUnitBrackets(t(labelKey));
     });
 
     // 切换下拉菜单的打开/关闭状态
@@ -72,7 +78,7 @@
                         class="w-full text-left px-4 py-3 text-xs font-medium flex items-center justify-between" :style="opt.value === modelValue
                             ? { color: '#007AFF', backgroundColor: 'rgba(239, 246, 255, 0.5)' }
                             : { color: '#475569', backgroundColor: 'transparent' }">
-                        {{ opt.label }}
+                        {{ $t(opt.label) }}
                         <Check v-if="opt.value === modelValue" class="w-3 h-3" />
                     </button>
                 </div>

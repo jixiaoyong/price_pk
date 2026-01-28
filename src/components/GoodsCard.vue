@@ -4,6 +4,8 @@
   import type { GoodsItem, CategoryData } from '../types';
   import { usePriceStore } from '../stores/usePriceStore';
   import CustomUnitSelect from './CustomUnitSelect.vue';
+  import { useI18n } from 'vue-i18n';
+  import { removeUnitBrackets } from '../utils/unitHelper';
 
   const props = defineProps<{
     item: GoodsItem;
@@ -12,6 +14,7 @@
   }>();
 
   const store = usePriceStore();
+  const { t } = useI18n();
 
   const unitPrice = computed(() => store.calculateUnitPrice(props.item, props.category));
   const hasData = computed(() => unitPrice.value !== Infinity);
@@ -31,13 +34,24 @@
     });
   });
 
+  // 获取基础单位的标签（用于单价显示，如 /g）
+  const baseUnitLabel = computed(() => {
+    const baseUnit = props.category.units.find(u => u.factor === 1);
+    if (baseUnit) {
+      // 这里 baseUnit.label 是 i18n key (例如 'unit.g')
+      // 1. t(baseUnit.label) -> '克 (g)'
+      // 2. removeUnitBrackets -> '克'
+      return removeUnitBrackets(t(baseUnit.label));
+    }
+    return props.category.defaultUnit;
+  });
 
   const emit = defineEmits<{
-    'request-delete': [id: string]
+    'request-delete': [id: string, name: string]
   }>();
 
   const onRemove = () => {
-    emit('request-delete', props.item.id);
+    emit('request-delete', props.item.id, props.item.name || t('goods.name_placeholder'));
   };
 
   const updatePrice = (value: string) => {
@@ -83,7 +97,7 @@
       class="absolute -top-px -right-px text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl rounded-tr-xl shadow-sm flex items-center gap-1 z-20"
       style="background-color: #007AFF;">
       <Trophy class="w-3 h-3" />
-      首选
+      {{ $t('goods.badge_best') }}
     </div>
 
     <!-- 价格偏高徽章 -->
@@ -91,14 +105,14 @@
       class="absolute top-0 right-0 text-[10px] font-bold px-2 py-1 rounded-bl-xl flex items-center gap-1"
       style="background-color: #fef2f2; color: #ef4444; border-left: 1px solid #fee2e2; border-bottom: 1px solid #fee2e2;">
       <ArrowUp class="w-3 h-3" />
-      贵 {{ percentDiff.toFixed(0) }}%
+      {{ $t('goods.badge_expensive') }} {{ percentDiff.toFixed(0) }}%
     </div>
 
     <!-- 头部：商品名称和删除按钮 -->
     <div class="flex justify-between items-center mb-3">
       <input v-model="item.name" type="text"
         class="bg-transparent font-bold focus:outline-none w-32 text-base border-b border-dashed border-transparent transition-colors"
-        :style="{ color: isCheapest ? '#007AFF' : '#334155' }" placeholder="商品名称" />
+        :style="{ color: isCheapest ? '#007AFF' : '#334155' }" :placeholder="$t('goods.name_placeholder')" />
       <button v-if="store.currentCategory.items.length > 2" @click="onRemove" class="p-2 -mr-2" style="color: #cbd5e1;">
         <Trash2 class="w-4 h-4" />
       </button>
@@ -109,7 +123,8 @@
       <!-- 价格输入框（宽度为0.8倍基准） -->
       <div class="relative group rounded-xl transition-colors" style="flex: 0.8; min-width: 0;"
         :style="{ backgroundColor: isCheapest ? '#eff6ff' : '#f8fafc' }">
-        <label class="text-[10px] font-bold absolute top-1.5 left-3 uppercase" style="color: #94a3b8;">价格</label>
+        <label class="text-[10px] font-bold absolute top-1.5 left-3 uppercase" style="color: #94a3b8;">{{
+          $t('goods.price') }}</label>
         <input type="number" inputmode="decimal" min="0" :value="item.price"
           @input="e => updatePrice((e.target as HTMLInputElement).value)" @blur="handlePriceBlur"
           class="w-full pt-6 pb-2 px-3 bg-transparent outline-none text-xl font-semibold placeholder-slate-200"
@@ -125,7 +140,8 @@
         :style="{ backgroundColor: isCheapest ? '#eff6ff' : '#f8fafc' }">
         <!-- 数量输入框 -->
         <div class="relative flex-1" style="min-width: 0;">
-          <label class="text-[10px] font-bold absolute top-1.5 left-3 uppercase" style="color: #94a3b8;">数量</label>
+          <label class="text-[10px] font-bold absolute top-1.5 left-3 uppercase" style="color: #94a3b8;">{{
+            $t('goods.amount') }}</label>
           <input v-model.number="item.amount" type="number" inputmode="decimal" min="0"
             class="w-full pt-6 pb-2 px-3 bg-transparent outline-none text-xl font-semibold placeholder-slate-200"
             style="color: #1e293b;" placeholder="0" />
@@ -143,7 +159,7 @@
       :style="{ borderColor: isCheapest ? '#dbeafe' : '#f1f5f9' }">
       <div class="flex items-center gap-2">
         <div class="text-[10px] font-medium" style="color: #94a3b8;">
-          单价(/{{category.units.find(u => u.factor === 1)?.label || category.defaultUnit}})
+          {{ $t('goods.unit_price') }}(/{{ baseUnitLabel }})
         </div>
       </div>
 
