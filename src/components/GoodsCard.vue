@@ -63,7 +63,7 @@
     props.item.price = null;
   };
 
-  // Track if unit dropdown is open to elevate z-index
+  // 跟踪单位下拉菜单是否打开，以提升 z-index
   const isUnitDropdownOpen = ref(false);
   const handleDropdownToggle = (isOpen: boolean) => {
     isUnitDropdownOpen.value = isOpen;
@@ -78,7 +78,7 @@
       : isCheapest
         ? { backgroundColor: '#ffffff', boxShadow: '0 0 0 2px #007AFF, 0 10px 15px -3px rgba(219, 234, 254, 0.5)', zIndex: 5 }
         : { backgroundColor: '#ffffff', border: '1px solid #e2e8f0', zIndex: 1 }">
-    <!-- Winner Badge -->
+    <!-- 首选徽章 -->
     <div v-if="isCheapest"
       class="absolute -top-px -right-px text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl rounded-tr-xl shadow-sm flex items-center gap-1 z-20"
       style="background-color: #007AFF;">
@@ -86,7 +86,7 @@
       首选
     </div>
 
-    <!-- Expensive Badge -->
+    <!-- 价格偏高徽章 -->
     <div v-if="!isCheapest && hasData && store.minUnitPrice !== Infinity"
       class="absolute top-0 right-0 text-[10px] font-bold px-2 py-1 rounded-bl-xl flex items-center gap-1"
       style="background-color: #fef2f2; color: #ef4444; border-left: 1px solid #fee2e2; border-bottom: 1px solid #fee2e2;">
@@ -94,7 +94,7 @@
       贵 {{ percentDiff.toFixed(0) }}%
     </div>
 
-    <!-- Header: Name & Delete -->
+    <!-- 头部：商品名称和删除按钮 -->
     <div class="flex justify-between items-center mb-3">
       <input v-model="item.name" type="text"
         class="bg-transparent font-bold focus:outline-none w-32 text-base border-b border-dashed border-transparent transition-colors"
@@ -104,10 +104,10 @@
       </button>
     </div>
 
-    <!-- Inputs Row -->
-    <div class="grid grid-cols-2 gap-3 mb-3">
-      <!-- Price Input -->
-      <div class="relative group rounded-xl transition-colors"
+    <!-- 输入行：价格、数量、单位 -->
+    <div class="flex gap-3 mb-3">
+      <!-- 价格输入框（宽度为0.8倍基准） -->
+      <div class="relative group rounded-xl transition-colors" style="flex: 0.8; min-width: 0;"
         :style="{ backgroundColor: isCheapest ? '#eff6ff' : '#f8fafc' }">
         <label class="text-[10px] font-bold absolute top-1.5 left-3 uppercase" style="color: #94a3b8;">价格</label>
         <input type="number" inputmode="decimal" min="0" :value="item.price"
@@ -120,15 +120,17 @@
         </button>
       </div>
 
-      <!-- Amount & Unit Input -->
-      <div class="flex rounded-xl overflow-visible transition-colors"
+      <!-- 数量和单位输入框（宽度为1.2倍基准） -->
+      <div class="flex rounded-xl overflow-visible transition-colors" style="flex: 1.2; min-width: 0;"
         :style="{ backgroundColor: isCheapest ? '#eff6ff' : '#f8fafc' }">
+        <!-- 数量输入框 -->
         <div class="relative flex-1" style="min-width: 0;">
           <label class="text-[10px] font-bold absolute top-1.5 left-3 uppercase" style="color: #94a3b8;">数量</label>
           <input v-model.number="item.amount" type="number" inputmode="decimal" min="0"
             class="w-full pt-6 pb-2 px-3 bg-transparent outline-none text-xl font-semibold placeholder-slate-200"
             style="color: #1e293b;" placeholder="0" />
         </div>
+        <!-- 单位选择器 -->
         <div class="w-auto rounded-r-xl flex-shrink-0"
           style="background-color: #f1f5f9; border-left: 1px solid #e2e8f0;">
           <CustomUnitSelect v-model="item.unit" :options="category.units" @dropdown-toggle="handleDropdownToggle" />
@@ -136,7 +138,7 @@
       </div>
     </div>
 
-    <!-- Result Row -->
+    <!-- 结果行：单价显示 -->
     <div class="flex items-center justify-between pt-2 border-t"
       :style="{ borderColor: isCheapest ? '#dbeafe' : '#f1f5f9' }">
       <div class="flex items-center gap-2">
@@ -157,5 +159,5 @@
 </template>
 
 <style scoped>
-  /* Scoped styles removed in favor of Tailwind classes, matching example.txt */
+  /* 作用域样式已移除，改用 Tailwind 类 */
 </style>

@@ -2,6 +2,7 @@
     import { ref, computed, onMounted, onUnmounted } from 'vue';
     import { ChevronDown, Check } from 'lucide-vue-next';
     import type { UnitInfo } from '../types';
+    import { removeUnitBrackets } from '../utils/unitHelper';
 
     const props = defineProps<{
         modelValue: string;
@@ -13,22 +14,28 @@
     const isOpen = ref(false);
     const containerRef = ref<HTMLElement | null>(null);
 
+    // 计算当前选中的单位标签（去除括号后的简化版本）
     const selectedLabel = computed(() => {
         const selected = props.options.find(opt => opt.value === props.modelValue);
-        return selected ? selected.label : props.modelValue;
+        const label = selected ? selected.label : props.modelValue;
+        // 去除括号及其内容，使显示更简洁
+        return removeUnitBrackets(label);
     });
 
+    // 切换下拉菜单的打开/关闭状态
     const toggleOpen = () => {
         isOpen.value = !isOpen.value;
         emit('dropdown-toggle', isOpen.value);
     };
 
+    // 选择一个单位选项
     const selectOption = (value: string) => {
         emit('update:modelValue', value);
         isOpen.value = false;
         emit('dropdown-toggle', false);
     };
 
+    // 处理点击组件外部时关闭下拉菜单
     const handleClickOutside = (event: MouseEvent) => {
         if (containerRef.value && !containerRef.value.contains(event.target as Node)) {
             if (isOpen.value) {
